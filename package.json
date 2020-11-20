@@ -1,9 +1,9 @@
 {
-  "name": "vscode-page",
-  "author": "dteam",
-  "publisher": "dteam",
+  "name": "vscode-wizard",
+  "author": "redhat",
+  "publisher": "redhat",
   "version": "0.0.2",
-  "description": "A light-weight page micro framework for vscode webview.",
+  "description": "A mid-weight page framework for generating wizards in a vscode webview.",
   "license": "Apache-2.0",
   "tags": [
     "functions",
@@ -32,8 +32,19 @@
   "engines": {
     "vscode": "^1.42.0"
   },
-  "main": "lib/pages.js",
-  "typings": "lib/pages.d.ts",
+  "main": "lib/wizardActivator.js",
+  "typings": "lib/wizardActivator.d.ts",
+  "activationEvents": [
+    "*"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "ext.home",
+        "title": "Show Example Page"
+      }
+    ]
+  },
   "scripts": {
     "prepare": "rm -rf lib && tsc && tsc -d",
     "prepublishOnly": "npm run compile && npm run lint",
@@ -61,10 +72,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DTeam-Top/vscode-page.git"
+    "url": "git+https://github.com/robstryker/vscode-wizard.git"
   },
   "bugs": {
-    "url": "https://github.com/DTeam-Top/vscode-page/issues"
+    "url": "https://github.com/robstryker/vscode-wizard/issues"
   },
-  "homepage": "https://github.com/DTeam-Top/vscode-page/blob/master/README.md"
+  "homepage": "https://github.com/robstryker/vscode-wizard/blob/master/README.md"
 }

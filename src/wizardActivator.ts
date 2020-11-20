@@ -1,6 +1,10 @@
-import * as vscode from "vscode";
-import { createOrShowPage } from "vscode-page";
-import { messageMappings } from "./home";
+import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as handlebars from 'handlebars';
+import { MesssageMapping } from "./wizardpage";
+import { createOrShowWizard } from "./wizardpage";
+
 
 export function activate(context: vscode.ExtensionContext) {
   registerCommands(context);
@@ -8,14 +12,17 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {}
 
+const messageMappings: MesssageMapping[] = [
+];
+
 function registerCommands(context: vscode.ExtensionContext) {
   let homePage = vscode.commands.registerCommand("ext.home", async () => {
-    createOrShowPage(
+    createOrShowWizard(
       "name",
       "ext.home",
       "Sample Page",
       "pages",
-      "home.html",
+      "stub.html",
       context,
       messageMappings
     );

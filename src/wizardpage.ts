@@ -3,18 +3,28 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as handlebars from 'handlebars';
 
-export type MessageHandler = (parameters?: any) => Promise<any>;
+
+
+
+export type MessageHandler = (parameters?: any) => Promise<HandlerResponse>;
 export interface Template {
   id: string;
   content?: string;
   contentUrl?: string;
 }
-export interface MesssageMaping {
+export interface MesssageMapping {
   command: string;
   handler: MessageHandler;
+  defaultTemplates?: Template[];
+  defaultForward?: string;
+}
+
+export interface HandlerResponse {
+  returnObject: any;
   templates?: Template[];
   forward?: string;
 }
+
 
 interface Content {
   id: string;
@@ -46,14 +56,14 @@ function initEventListener(fn) {
 }
 `;
 
-export function createOrShowPage(
+export function createOrShowWizard(
   name: string,
   viewType: string,
   title: string,
   base: string,
   page: string,
   context: vscode.ExtensionContext,
-  messageMappings: MesssageMaping[]
+  messageMappings: MesssageMapping[]
 ) {
   let panel = currentPanels.get(name);
   if (panel) {
@@ -94,7 +104,7 @@ export function createOrShowPage(
 }
 
 function createDispatch(
-  messageMappings: MesssageMaping[],
+  messageMappings: MesssageMapping[],
   currentPanel: vscode.WebviewPanel,
   context: vscode.ExtensionContext
 ) {
@@ -107,9 +117,12 @@ function createDispatch(
         command: `${message.command}Response`,
       };
       mapping.handler.call(null, message.parameters).then(result => {
-        if (mapping.templates) {
+        const templates: Template[] | undefined = (result.templates == null ? mapping.defaultTemplates : result.templates);
+        const forward: string | undefined = (result.forward == null ? mapping.defaultForward : result.forward);
+
+        if (templates) {
           response.contents = [];
-          mapping.templates.forEach(template => {
+          templates.forEach(template => {
             if (template.content) {
               response.contents?.push({
                 id: template.id,
@@ -128,9 +141,9 @@ function createDispatch(
               });
             }
           });
-        } else if (mapping.forward) {
+        } else if (forward) {
           return handler.call(null, {
-            command: mapping.forward,
+            command: forward,
             parameters: result,
           });
         } else {

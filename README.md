@@ -1,8 +1,14 @@
-# vscode-page
+# vscode-wizard
 
 [![Code Style: Google](https://img.shields.io/badge/code%20style-google-blueviolet.svg)](https://github.com/google/gts)
 
-[![NPM](https://nodei.co/npm/vscode-page.png?compact=true)](https://nodei.co/npm/vscode-page/)
+[![NPM](https://nodei.co/npm/vscode-page.png?compact=true)](https://nodei.co/npm/vscode-wizard/)
+
+vscode-wizard is a fork and adaptation of vscode-page, which can be found [here](https://github.com/DTeam-Top/vscode-page)
+
+Documentation will try to be updated as I change the project to suit my needs. 
+
+# vscode-page
 
 vscode-page is a light-weight page micro framework for vscode webview, it could accelerate Vs Code Extension Webview development.
 
