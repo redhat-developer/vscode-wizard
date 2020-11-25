@@ -126,7 +126,7 @@ function createDispatch(
             if (template.content) {
               response.contents?.push({
                 id: template.id,
-                body: handlebars.compile(template.content)(result),
+                body: handlebars.compile(template.content)(result.returnObject),
               });
             } else if (template.contentUrl) {
               response.contents?.push({

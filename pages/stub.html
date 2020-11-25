@@ -18,9 +18,9 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-light fixed-top bd-navbar">
     <h1 class="navbar-brand">
-      <div id="title">This is a title</div>
+      <div id="title">null</div>
       <div id="banner"></div>
-      <div id="description"><h6>Sample Page: This is a page created by vscode-page.</h6></div>
+      <div id="description"><h6>null</h6></div>
       
     </h1>
   </nav>
@@ -52,15 +52,18 @@
     }
 
     function fieldChanged(fieldId) {
+      console.log("field changed");
       var val = document.getElementById(fieldId).value;
       wizardMap.set(fieldId, val);
       postCommandWithMap("validate");
     }
 
     function nextPressed(fieldId) {
+      console.log("next pressed");
       postCommandWithMap("nextPressed");
     }
     function finishPressed(fieldId) {
+      console.log("finish pressed");
       postCommandWithMap("finishPressed");
     }
 
