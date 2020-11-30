@@ -12,18 +12,18 @@ export class Wizard implements IWizard {
     canFinish(): boolean {
         for( let entry of this.pages ) {
             if( !entry.isPageComplete())
-            return false;
+            {return false;}
         }
         return true;
     }
     getStartingPage(): IWizardPage | null{
         if( this.pages.length > 0 )
-            return this.pages[0];
+            {return this.pages[0];}
         return null;
     }
     getNextPage(page: IWizardPage): IWizardPage | null{
         let index = this.pages.indexOf(page);
-		if (index == this.pages.length - 1 || index == -1) {
+		if (index === this.pages.length - 1 || index === -1) {
 			// last page or page not found
 			return null;
 		}
@@ -31,7 +31,7 @@ export class Wizard implements IWizard {
     }
     getPreviousPage(page: IWizardPage): IWizardPage | null{
         let index = this.pages.indexOf(page);
-		if (index == 0 || index == -1) {
+		if (index === 0 || index === -1) {
 			// first page or page not found
 			return null;
 		}

@@ -2,12 +2,8 @@ import { Wizard } from './Wizard';
 import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as handlebars from 'handlebars';
 import { MesssageMapping, Template, HandlerResponse } from "./pageImpl";
 import { createOrShowWizard } from "./pageImpl";
-import { WizardPage } from './WizardPage';
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager } from './IWizardWorkflowManager';
 
@@ -72,14 +68,14 @@ export class WebviewWizard extends Wizard implements IWizard {
     }
 
     canFinishInternal(parameters: any): boolean {
-        if( this.definition.workflowManager == undefined ) {
+        if( this.definition.workflowManager === undefined ) {
             return super.canFinish();
         }
         return this.definition.workflowManager.canFinish(this, parameters);
     }
     nextImpl(data: any) : HandlerResponse {
         let nextPage : IWizardPage | null = null;
-        if( this.currentPage == null ) {
+        if( this.currentPage === null ) {
             nextPage = this.getStartingPage();
         } else if( this.definition.workflowManager !== undefined 
             && this.definition.workflowManager.getNextPage) {
@@ -110,30 +106,30 @@ export class WebviewWizard extends Wizard implements IWizard {
             { id: "description", content: this.getCurrentPageDescription()},
             { id: "content", content: this.getCurrentPageContent()},
             { id: "wizardControls", content: this.getUpdatedWizardControls(parameters)}
-        ]
+        ];
     }
     generateValidationTemplates(parameters:any) {
-        return this.getCurrentPage() != null ? this.getCurrentPage()!.getValidationTemplates(parameters) : [];
+        return this.getCurrentPage() !== null ? this.getCurrentPage()!.getValidationTemplates(parameters) : [];
     }
     getCurrentPageName(): string {
-        return (this.currentPage == null ? "" : this.currentPage.getName()) 
+        return (this.currentPage === null ? "" : this.currentPage.getName()); 
     }
 
     getCurrentPageDescription(): string {
-        return (this.currentPage == null ? "" : this.currentPage.getDescription()) 
+        return (this.currentPage === null ? "" : this.currentPage.getDescription()); 
     }
 
     getCurrentPageContent(): string {
         const page : WebviewWizardPage | null = this.getCurrentPage();
-        if( page == null )
-            return "";
+        if( page === null )
+            {return "";}
         return page.getContentAsHTML();
     }
 
     getCurrentPage(): WebviewWizardPage | null {
         const cur : IWizardPage | null = super.getPage(this.getCurrentPageName());
         if(cur instanceof WebviewWizardPage ) 
-            return cur;
+            {return cur;}
         return null;
     }
     open(): void {
@@ -159,8 +155,8 @@ export class WebviewWizard extends Wizard implements IWizard {
         }
     }
     getUpdatedWizardControls(parameters: any): string {
-        let hasNext = (this.currentPage != null && this.currentPage.isPageComplete() && 
-                        this.getNextPage(this.currentPage) != null);
+        let hasNext = (this.currentPage !== null && this.currentPage.isPageComplete() && 
+                        this.getNextPage(this.currentPage) !== null);
         const ret: string = this.createButton("buttonNext", "nextPressed()", hasNext, "Next") + 
 
         this.createButton("buttonFinish", "finishPressed()", this.canFinishInternal(parameters), "Finish");

@@ -46,10 +46,12 @@
     ]
   },
   "scripts": {
+    "build": "npm run clean && eslint . --ext .ts && npm run compile",
+    "lint": "eslint src --ext ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "prepare": "rm -rf lib && tsc && tsc -d",
     "prepublishOnly": "npm run compile && npm run lint",
     "compile": "tsc -p ./",
-    "lint": "eslint src --ext ts",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "test": "mocha out/test/**/*.test.js",

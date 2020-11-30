@@ -117,8 +117,8 @@ function createDispatch(
         command: `${message.command}Response`,
       };
       mapping.handler.call(null, message.parameters).then(result => {
-        const templates: Template[] | undefined = (result.templates == null ? mapping.defaultTemplates : result.templates);
-        const forward: string | undefined = (result.forward == null ? mapping.defaultForward : result.forward);
+        const templates: Template[] | undefined = (result.templates === null ? mapping.defaultTemplates : result.templates);
+        const forward: string | undefined = (result.forward === null ? mapping.defaultForward : result.forward);
 
         if (templates) {
           response.contents = [];

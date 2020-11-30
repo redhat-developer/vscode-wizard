@@ -14,13 +14,13 @@ export class WizardPage implements IWizardPage {
         this.previousPage = null;
     }
     canFlipToNextPage(): boolean {
-        return this.isPageComplete() && this.getNextPage() != null;
+        return this.isPageComplete() && this.getNextPage() !== null;
     }
     getName(): string {
         return this.name;
     }
     getNextPage(): IWizardPage | null {
-        if (this.wizard == null) {
+        if (this.wizard === null) {
 			return null;
 		}
 		return this.wizard.getNextPage(this);

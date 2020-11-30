@@ -1,7 +1,6 @@
-import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 import { WizardPage } from './WizardPage';
-import { WizardPageDefinition, WizardPageFieldDefinition } from './WebviewWizard';
+import { WizardPageDefinition } from './WebviewWizard';
 import { Template } from './pageImpl';
 export class WebviewWizardPage extends WizardPage implements IWizardPage {
     definition:WizardPageDefinition; 
@@ -21,7 +20,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
     validate(parameters: any, templates:Template[]): Template[] {
         if( this.definition.validator ) {
             let ret: Template[] = this.definition.validator.call(null, parameters);
-            if( ret != null && ret.length > 0 ) {
+            if( ret !== null && ret.length > 0 ) {
                 this.setPageComplete(false);
             }
             return templates.concat(ret);
@@ -32,7 +31,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
     getContentAsHTML(): string {
         let ret = "";
         for( let oneField of this.definition.fields ) {
-            if( oneField.type == "textbox") {
+            if( oneField.type === "textbox") {
                 ret = ret + oneField.label + ": " + "<input type=text id=\"" 
                 + oneField.id + "\" oninput=\"fieldChanged('" + 
                 oneField.id + "')\"><br>\n" + 

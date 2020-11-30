@@ -1,9 +1,4 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as handlebars from 'handlebars';
-import { MesssageMapping } from "./pageImpl";
-import { createOrShowWizard } from "./pageImpl";
 import { WebviewWizard, WizardPageDefinition, WizardDefinition } from './WebviewWizard';
 
 
@@ -12,9 +7,6 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {}
-
-const messageMappings: MesssageMapping[] = [
-];
 
 function registerCommands(context: vscode.ExtensionContext) {
   let homePage = vscode.commands.registerCommand("ext.home", async () => {
@@ -38,7 +30,7 @@ function registerCommands(context: vscode.ExtensionContext) {
       validator: (parameters:any) => {
           let templates = [];
           const username = parameters.addusername;
-          if( username == 'b') {
+          if( username === 'b') {
               templates.push({ id: "addusernameValidation", 
               content: "Username must not be 'b'"});
           }
@@ -61,7 +53,7 @@ function registerCommands(context: vscode.ExtensionContext) {
       title: "Sample Wizard", 
       description: "A wizard to sample - description",
       pages: [page1, page2]
-    }
+    };
     const wiz: WebviewWizard = new WebviewWizard("sample1", "sample1", context, def);
     wiz.open();
   }
