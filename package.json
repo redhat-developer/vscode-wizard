@@ -60,7 +60,7 @@
     "update-deps": "node_modules/.bin/ncu --upgrade --loglevel verbose --packageFile package.json && npm update",
     "verify": "node ./out/build/verify-tools.js",
     "vscode:prepublish": "npm run compile",
-    "watch": "tsc -watch -p ./"  
+    "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
     "@types/mocha": "^7.0.1",
