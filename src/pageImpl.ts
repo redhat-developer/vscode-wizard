@@ -36,7 +36,7 @@ interface CommandResponse {
   result?: any;
 }
 
-const currentPanels: Map<string, vscode.WebviewPanel> = new Map();
+export const currentPanels: Map<string, vscode.WebviewPanel> = new Map();
 
 const initJS = `
 function initEventListener(fn) {
@@ -45,6 +45,8 @@ function initEventListener(fn) {
     if (message.command.match(/Response$/) && message.contents) {
       message.contents.forEach(content => {
         let element = document.getElementById(content.id);
+        if( element === null ) 
+          console.log(content.id + " is null");
         element.innerHTML = content.body;
       });
     } else {
@@ -56,6 +58,12 @@ function initEventListener(fn) {
 }
 `;
 
+export function disposeWizard(name: string) {
+  let panel = currentPanels.get(name);
+  if (panel) {
+    panel.dispose();
+  }
+}
 export function createOrShowWizard(
   name: string,
   viewType: string,
@@ -117,6 +125,9 @@ function createDispatch(
         command: `${message.command}Response`,
       };
       mapping.handler.call(null, message.parameters).then(result => {
+        if( !result ) {
+          return;
+        }
         const templates: Template[] | undefined = (result.templates === null ? mapping.defaultTemplates : result.templates);
         const forward: string | undefined = (result.forward === null ? mapping.defaultForward : result.forward);
 

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { WebviewWizard } from './WebviewWizard';
-import { getTwoPageLinearSampleWizardWithValidation } from "./Sample";
+import { getThreePageBranchWorkflowSampleWizardWithValidation } from "./Sample";
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -17,7 +17,7 @@ function registerCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(homePage);
 
   function openSampleWizard(context: vscode.ExtensionContext) {
-    const wiz: WebviewWizard = getTwoPageLinearSampleWizardWithValidation(context);
+    const wiz: WebviewWizard = getThreePageBranchWorkflowSampleWizardWithValidation(context);
     wiz.open();
   }
 }

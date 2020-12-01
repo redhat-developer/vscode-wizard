@@ -44,7 +44,7 @@
     const vscode = acquireVsCodeApi();
     const wizardMap = new Map();
     init();
-
+    
     function init() {
       vscode.postMessage({
         command: "ready"
@@ -62,6 +62,12 @@
       console.log("next pressed");
       postCommandWithMap("nextPressed");
     }
+
+    function backPressed(fieldId) {
+      console.log("back pressed");
+      postCommandWithMap("backPressed");
+    }
+
     function finishPressed(fieldId) {
       console.log("finish pressed");
       postCommandWithMap("finishPressed");

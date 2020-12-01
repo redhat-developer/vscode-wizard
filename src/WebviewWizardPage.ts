@@ -10,8 +10,8 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
     }
     getValidationTemplates(parameters:any) {
         let templates : Template[] = [];
-        for (let key of Object.keys(parameters)) {
-            templates.push({ id: key + "Validation", content: "&nbsp;"});
+        for (let key of this.definition.fields) {
+            templates.push({ id: key.id + "Validation", content: "&nbsp;"});
         }
         this.setPageComplete(true);
         return this.validate(parameters, templates);

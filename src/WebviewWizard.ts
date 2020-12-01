@@ -3,13 +3,14 @@ import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 import * as vscode from 'vscode';
 import { MesssageMapping, Template, HandlerResponse } from "./pageImpl";
-import { createOrShowWizard } from "./pageImpl";
+import { createOrShowWizard, disposeWizard } from "./pageImpl";
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager } from './IWizardWorkflowManager';
 
 export class WebviewWizard extends Wizard implements IWizard {
     context:  vscode.ExtensionContext;
     readyMapping : MesssageMapping;
+    backPressedMapping : MesssageMapping;
     nextPressedMapping : MesssageMapping;
     finishPressedMapping : MesssageMapping;
     validateMapping : MesssageMapping;
@@ -45,6 +46,13 @@ export class WebviewWizard extends Wizard implements IWizard {
             }
         };
 
+        this.backPressedMapping = {
+            command: "backPressed",
+            handler: async (parameters:any) => {
+                return this.backImpl(parameters);
+            }
+        };
+
         this.finishPressedMapping = {
             command: "finishPressed",
             handler: async (parameters:any) => {
@@ -68,21 +76,52 @@ export class WebviewWizard extends Wizard implements IWizard {
     }
 
     canFinishInternal(parameters: any): boolean {
+        var ret : boolean;
         if( this.definition.workflowManager === undefined ) {
-            return super.canFinish();
+            ret = super.canFinish();
+        } else {
+            ret = this.definition.workflowManager.canFinish(this, parameters !== undefined ? parameters : {});
         }
-        return this.definition.workflowManager.canFinish(this, parameters);
+        return ret;
     }
-    nextImpl(data: any) : HandlerResponse {
+
+    getActualPreviousPage(data: any) : IWizardPage | null {
+        let previousPage : IWizardPage | null = null;
+        if( this.currentPage === null ) {
+            previousPage = this.getStartingPage();
+        } else if( this.definition.workflowManager !== undefined 
+            && this.definition.workflowManager.getPreviousPage) {
+                previousPage = this.definition.workflowManager.getPreviousPage(
+                    this.currentPage, data === undefined ? {} : data);
+        } else {
+            previousPage = this.getPreviousPage(this.currentPage);
+        }
+        return previousPage;
+    }
+    getActualNextPage(data: any) : IWizardPage | null {
         let nextPage : IWizardPage | null = null;
         if( this.currentPage === null ) {
             nextPage = this.getStartingPage();
         } else if( this.definition.workflowManager !== undefined 
             && this.definition.workflowManager.getNextPage) {
-                nextPage = this.definition.workflowManager.getNextPage(this.currentPage, data);
+                nextPage = this.definition.workflowManager.getNextPage(
+                    this.currentPage, data === undefined ? {} : data);
         } else {
             nextPage = this.getNextPage(this.currentPage);
         }
+        return nextPage;
+    }
+
+    backImpl(data: any) : HandlerResponse {
+        this.currentPage = this.getActualPreviousPage(data);
+        return {
+            returnObject: {},
+            templates: this.getShowCurrentPageTemplates(data)
+        };
+    }
+
+    nextImpl(data: any) : HandlerResponse {
+        let nextPage : IWizardPage | null = this.getActualNextPage(data);
         this.currentPage = nextPage;
         return {
             returnObject: {},
@@ -91,13 +130,12 @@ export class WebviewWizard extends Wizard implements IWizard {
     }
 
     finishImpl(data: any) : HandlerResponse {
+        if( this.definition.workflowManager !== undefined ) {
+            this.definition.workflowManager.performFinish(this, data);
+        }
         // TODO clean up
-        return {
-            returnObject: {
-            },
-            templates: [
-            ]
-        };
+        disposeWizard(this.id);
+        return null;
         
     }
     getShowCurrentPageTemplates(parameters: any) : Template[] {
@@ -142,7 +180,8 @@ export class WebviewWizard extends Wizard implements IWizard {
             "pages",
             "stub.html",
             this.context,
-            [this.readyMapping, this.validateMapping, this.nextPressedMapping, this.finishPressedMapping]
+            [this.readyMapping, this.validateMapping, this.backPressedMapping,
+                this.nextPressedMapping, this.finishPressedMapping]
           );
       
     }
@@ -150,25 +189,27 @@ export class WebviewWizard extends Wizard implements IWizard {
         for( let d of this.definition.pages) {
             let page: WebviewWizardPage = new WebviewWizardPage(d);
             page.setWizard(this);
-            page.setPageComplete(true);
+            page.validate({}, []);
             this.addPage(page);
         }
     }
     getUpdatedWizardControls(parameters: any): string {
-        let hasNext = (this.currentPage !== null && this.currentPage.isPageComplete() && 
-                        this.getNextPage(this.currentPage) !== null);
-        const ret: string = this.createButton("buttonNext", "nextPressed()", hasNext, "Next") + 
+        let hasPrevious = (this.currentPage !== null && 
+            this.getActualPreviousPage(this.currentPage) !== null);
 
-        this.createButton("buttonFinish", "finishPressed()", this.canFinishInternal(parameters), "Finish");
+        let hasNext = (this.currentPage !== null && this.currentPage.isPageComplete() && 
+                        this.getActualNextPage(parameters) !== null);
+
+        const ret: string = 
+            this.createButton("buttonBack", "backPressed()", hasPrevious, "Back") + 
+            this.createButton("buttonNext", "nextPressed()", hasNext, "Next") + 
+            this.createButton("buttonFinish", "finishPressed()", this.canFinishInternal(parameters), "Finish");
         return ret;
     }
     createButton(id: string, onclick: string, enabled: boolean, text: string): string {
         return "<button type=\"button\" class=\"btn btn-secondary\" id=\"" + id + 
         "\" onclick=\"" + onclick + "\" " + (enabled ? "" : " disabled") + ">" + text + "</button>\n";
     }
-
-
-
 }
 
 

@@ -32,8 +32,8 @@
   "engines": {
     "vscode": "^1.42.0"
   },
-  "main": "lib/wizardActivator.js",
-  "typings": "lib/wizardActivator.d.ts",
+  "main": "out/src/wizardActivator.js",
+  "typings": "out/src/wizardActivator.d.ts",
   "activationEvents": [
     "*"
   ],
