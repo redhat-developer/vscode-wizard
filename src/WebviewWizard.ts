@@ -13,6 +13,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     backPressedMapping : MesssageMapping;
     nextPressedMapping : MesssageMapping;
     finishPressedMapping : MesssageMapping;
+
     validateMapping : MesssageMapping;
     currentPage: IWizardPage | null = null;
     id: string;
@@ -133,11 +134,14 @@ export class WebviewWizard extends Wizard implements IWizard {
         if( this.definition.workflowManager !== undefined ) {
             this.definition.workflowManager.performFinish(this, data);
         }
-        // TODO clean up
-        disposeWizard(this.id);
+        this.close();
         return null;
-        
     }
+
+    close(): void {
+        disposeWizard(this.id);
+    }
+
     getShowCurrentPageTemplates(parameters: any) : Template[] {
         return [
             { id: "title", content: this.getCurrentPageName()},
@@ -183,7 +187,6 @@ export class WebviewWizard extends Wizard implements IWizard {
             [this.readyMapping, this.validateMapping, this.backPressedMapping,
                 this.nextPressedMapping, this.finishPressedMapping]
           );
-      
     }
     addPages(): void {
         for( let d of this.definition.pages) {
@@ -199,11 +202,11 @@ export class WebviewWizard extends Wizard implements IWizard {
 
         let hasNext = (this.currentPage !== null && this.currentPage.isPageComplete() && 
                         this.getActualNextPage(parameters) !== null);
-
+        let canFinishNow = this.canFinishInternal(parameters);
         const ret: string = 
             this.createButton("buttonBack", "backPressed()", hasPrevious, "Back") + 
             this.createButton("buttonNext", "nextPressed()", hasNext, "Next") + 
-            this.createButton("buttonFinish", "finishPressed()", this.canFinishInternal(parameters), "Finish");
+            this.createButton("buttonFinish", "finishPressed()", canFinishNow, "Finish");
         return ret;
     }
     createButton(id: string, onclick: string, enabled: boolean, text: string): string {
@@ -237,4 +240,5 @@ export interface WizardPageFieldDefinition {
     label: string;
     description?: string;
     initialValue?: string;
+    properties?: any;
 }

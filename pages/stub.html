@@ -52,8 +52,12 @@
     }
 
     function fieldChanged(fieldId) {
-      console.log("field changed");
       var val = document.getElementById(fieldId).value;
+      fieldChangedWithVal(fieldId, val);
+    }
+
+    function fieldChangedWithVal(fieldId, val) {
+      console.log("field changed: setting " + fieldId + " to " + val);
       wizardMap.set(fieldId, val);
       postCommandWithMap("validate");
     }

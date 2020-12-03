@@ -45,6 +45,89 @@ export function getTwoPageLinearSampleWizardWithValidation(context: vscode.Exten
   }
 
 
+export function demonstrateSinglePageAllControls(context: vscode.ExtensionContext) : WebviewWizard {
+    let def : WizardDefinition = {
+      title: "Sample Wizard", 
+      description: "A wizard to sample - description",
+      pages: [
+        {
+            title: "Page 1",
+            description: "Example description",
+            fields: [
+                {
+                    id: "addusername",
+                    label: "Username",
+                    type: "textbox",
+                    initialValue: "Textbox initial value"
+                },
+                {
+                    id: "over18",
+                    label: "Over 18?",
+                    type: "checkbox",
+                    initialValue: "true"
+                },
+                {
+                    id: "bio",
+                    label: "Biography",
+                    type: "textarea",
+                    initialValue: "this is weird\nblahblah",
+                    properties: {
+                        rows: "4",
+                        columns: "10"
+                    }
+                },
+                {
+                    id: "gender",
+                    label: "Gender",
+                    type: "radio",
+                    initialValue: "male",
+                    properties: {
+                        options: [
+                            "male", "female", "other"
+                        ]
+                    }
+                },
+                {
+                    id: "favparent",
+                    label: "Favorite Parent",
+                    type: "select",
+                    initialValue: "mom",
+                    properties: {
+                        options: [
+                           "mom", "dad"
+                        ]
+                    }
+                },
+                {
+                    id: "religion",
+                    label: "Religion",
+                    type: "combo",
+                    initialValue: "Pastafarian",
+                    properties: {
+                        options: [
+                           "Jedi", "Pastafarian"
+                        ]
+                    }
+                }                
+
+            ],
+            validator: (parameters:any) => {
+                let templates = [];
+                const username = parameters.addusername;
+                if( username === 'b') {
+                    templates.push({ id: "addusernameValidation", 
+                    content: "Username must not be 'b'"});
+                }
+                return templates;
+            }
+          }
+        ]
+    };
+    const wiz: WebviewWizard = new WebviewWizard("sample3", "sample3", context, def);
+    return wiz;
+  }
+
+
   export function getThreePageBranchWorkflowSampleWizardWithValidation(context: vscode.ExtensionContext) : WebviewWizard {
 
     let def : WizardDefinition = {
