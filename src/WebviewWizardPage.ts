@@ -2,7 +2,6 @@ import { IWizardPage } from './IWizardPage';
 import { WizardPage } from './WizardPage';
 import { WizardPageDefinition, WizardPageFieldDefinition } from './WebviewWizard';
 import { Template } from './pageImpl';
-import { defaultMaxListeners } from 'stream';
 export class WebviewWizardPage extends WizardPage implements IWizardPage {
     definition:WizardPageDefinition; 
     constructor(definition: WizardPageDefinition) {
