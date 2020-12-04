@@ -65,7 +65,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
     comboAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
         let iv = this.getInitialValue(oneField, data);
 
-        if( !oneField.properties || !oneField.properties.options) {
+        if( !oneField.optionProvider && (!oneField.properties || !oneField.properties.options)) {
             return this.textBoxAsHTML(oneField, data);
         } 
         // actual combo here
@@ -74,7 +74,15 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
                                 "list=\"" + oneField.id + "InternalList\" " + 
                                 "id=\"" + oneField.id + "\"" + (iv ? "value=\"" + iv + "\"" : "") + " onchange=\"fieldChanged('" + oneField.id + "')\"/>\n";
         let dataList : string = "<datalist id=\"" + oneField.id + "InternalList\">";
-        for( let oneOpt of oneField.properties?.options ) {
+        let optList = null;
+        if( oneField.optionProvider ) {
+            optList = oneField.optionProvider(data);
+        }
+        if( optList === null && oneField.properties && oneField.properties.options) {
+            optList = oneField.properties?.options;
+        }
+
+        for( let oneOpt of optList ) {
             let selected: boolean = iv ? (iv === oneOpt) : false;
             dataList = dataList + "   <option value=\"" + oneOpt + "\"" + (selected ? " selected" : "") + ">\n";
         }

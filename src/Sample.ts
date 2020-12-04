@@ -36,7 +36,16 @@ export function getTwoPageLinearSampleWizardWithValidation(context: vscode.Exten
                     label: "Favorite Color",
                     type: "textbox"
                 }
-            ]
+            ],
+            validator: (parameters:any) => {
+                let templates = [];
+                const color = parameters.favcolor;
+                if( color === null || color === undefined || color === "") {
+                    templates.push({ id: "favcolorValidation", 
+                    content: "Favorite Color must not be empty."});
+                }
+                return templates;
+            }
           }
         ]
     };
@@ -110,8 +119,21 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                            "Jedi", "Pastafarian"
                         ]
                     }
+                },
+                {
+                    id: "favoriteLanguage",
+                    label: "Favorite Programming Language",
+                    type: "combo",
+                    initialValue: "Java",
+                    optionProvider: (parameters:any) => {
+                        let ret = [];
+                        // pull from a model
+                        ret.push("Perl");
+                        ret.push("Java");
+                        ret.push("Brainfuck");
+                        return ret;
+                    }
                 }                
-
             ],
             validator: (parameters:any) => {
                 let templates = [];
@@ -125,7 +147,8 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
           }
         ]
     };
-    const wiz: WebviewWizard = new WebviewWizard("sample3", "sample3", context, def, new Map<string,string>());
+    const wiz: WebviewWizard = new WebviewWizard("sample3", "sample3", context, def, 
+            new Map<string,string>());
     return wiz;
   }
 

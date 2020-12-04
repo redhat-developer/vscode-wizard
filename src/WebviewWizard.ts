@@ -6,6 +6,7 @@ import { MesssageMapping, Template, HandlerResponse } from "./pageImpl";
 import { createOrShowWizard, disposeWizard, sendInitialData } from "./pageImpl";
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager } from './IWizardWorkflowManager';
+import { stringify } from 'querystring';
 
 export class WebviewWizard extends Wizard implements IWizard {
     context:  vscode.ExtensionContext;
@@ -191,7 +192,17 @@ export class WebviewWizard extends Wizard implements IWizard {
             [this.readyMapping, this.validateMapping, this.backPressedMapping,
                 this.nextPressedMapping, this.finishPressedMapping]
           );
-        sendInitialData(this.id, this.initialData);
+
+        // organize initial data
+        let m = new Map<string, string>();
+        for( let p of this.definition.pages) {
+            p.fields.forEach(element => {
+                if( element.initialValue ) {
+                    m.set(element.id, element.initialValue);
+                }
+            });
+        }
+        sendInitialData(this.id, new Map([...m, ...this.initialData]));
     }
     addPages(): void {
         for( let d of this.definition.pages) {
@@ -226,6 +237,8 @@ export class WebviewWizard extends Wizard implements IWizard {
 
 
 export type WizardPageValidator = (parameters?: any) => Template[];
+export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
+
 
 export interface WizardDefinition {
     title: string;
@@ -249,4 +262,5 @@ export interface WizardPageFieldDefinition {
     description?: string;
     initialValue?: string;
     properties?: any;
+    optionProvider?: WizardPageFieldOptionProvider;
 }
