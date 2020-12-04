@@ -58,6 +58,20 @@ function initEventListener(fn) {
 }
 `;
 
+// data should be an object literal
+export function sendInitialData(wizardName: string, data: Map<string,string>) {
+  let panel = currentPanels.get(wizardName);
+  if (panel) {
+    const response: CommandResponse = {
+      command: `InitializeData`,
+    };
+    let obj = Array.from(data).reduce((obj, [key, value]) => (
+      Object.assign(obj, { [key]: value }) // Be careful! Maps can have non-String keys; object literals can't.
+    ), {});
+    response.result = obj;
+    panel.webview.postMessage(response);
+  }
+}
 export function disposeWizard(name: string) {
   let panel = currentPanels.get(name);
   if (panel) {

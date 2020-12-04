@@ -3,7 +3,7 @@ import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 import * as vscode from 'vscode';
 import { MesssageMapping, Template, HandlerResponse } from "./pageImpl";
-import { createOrShowWizard, disposeWizard } from "./pageImpl";
+import { createOrShowWizard, disposeWizard, sendInitialData } from "./pageImpl";
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager } from './IWizardWorkflowManager';
 
@@ -20,9 +20,12 @@ export class WebviewWizard extends Wizard implements IWizard {
     type: string;
     title: string;
     definition: WizardDefinition;
+    initialData: Map<string, string>;
+
     constructor(id: string, type: string, context2:  vscode.ExtensionContext,
-        definition: WizardDefinition) {
+        definition: WizardDefinition, initialData: Map<string, string>) {
         super();
+        this.initialData = initialData;
         this.definition = definition;
         this.id = id;
         this.type = type;
@@ -35,7 +38,7 @@ export class WebviewWizard extends Wizard implements IWizard {
                 return {
                     returnObject: {
                     },
-                    templates: this.getShowCurrentPageTemplates(parameters)
+                    templates: this.getShowCurrentPageTemplates(initialData)
                 };
             }
         };
@@ -67,7 +70,7 @@ export class WebviewWizard extends Wizard implements IWizard {
             handler: async (parameters:any) => {
                 const validations = this.generateValidationTemplates(parameters);
                 validations.push(
-                    { id: "wizardControls", content: this.getUpdatedWizardControls(parameters)});
+                    { id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false)});
                 return {
                     returnObject: {},
                     templates: validations
@@ -146,10 +149,11 @@ export class WebviewWizard extends Wizard implements IWizard {
         return [
             { id: "title", content: this.getCurrentPageName()},
             { id: "description", content: this.getCurrentPageDescription()},
-            { id: "content", content: this.getCurrentPageContent()},
-            { id: "wizardControls", content: this.getUpdatedWizardControls(parameters)}
+            { id: "content", content: this.getCurrentPageContent(parameters)},
+            { id: "wizardControls", content: this.getUpdatedWizardControls(parameters, true)}
         ];
     }
+
     generateValidationTemplates(parameters:any) {
         return this.getCurrentPage() !== null ? this.getCurrentPage()!.getValidationTemplates(parameters) : [];
     }
@@ -161,11 +165,11 @@ export class WebviewWizard extends Wizard implements IWizard {
         return (this.currentPage === null ? "" : this.currentPage.getDescription()); 
     }
 
-    getCurrentPageContent(): string {
+    getCurrentPageContent(parameters: any): string {
         const page : WebviewWizardPage | null = this.getCurrentPage();
         if( page === null )
             {return "";}
-        return page.getContentAsHTML();
+        return page.getContentAsHTML(parameters);
     }
 
     getCurrentPage(): WebviewWizardPage | null {
@@ -187,6 +191,7 @@ export class WebviewWizard extends Wizard implements IWizard {
             [this.readyMapping, this.validateMapping, this.backPressedMapping,
                 this.nextPressedMapping, this.finishPressedMapping]
           );
+        sendInitialData(this.id, this.initialData);
     }
     addPages(): void {
         for( let d of this.definition.pages) {
@@ -196,7 +201,10 @@ export class WebviewWizard extends Wizard implements IWizard {
             this.addPage(page);
         }
     }
-    getUpdatedWizardControls(parameters: any): string {
+    getUpdatedWizardControls(parameters: any, validate: boolean): string {
+        if( validate ) {
+            this.generateValidationTemplates(parameters);
+        }
         let hasPrevious = (this.currentPage !== null && 
             this.getActualPreviousPage(this.currentPage) !== null);
 

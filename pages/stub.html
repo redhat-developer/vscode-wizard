@@ -39,10 +39,16 @@
     </div>
   </div>
   <script type="text/javascript">
-    initEventListener();
+    initEventListener(function(msg) {
+      console.log(msg);
+      if( msg && msg.result) {
+        const map = new Map(Object.entries(msg.result));
+        wizardMap = map;
+      }
+    });
 
     const vscode = acquireVsCodeApi();
-    const wizardMap = new Map();
+    let wizardMap = new Map();
     init();
     
     function init() {

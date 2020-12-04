@@ -40,7 +40,9 @@ export function getTwoPageLinearSampleWizardWithValidation(context: vscode.Exten
           }
         ]
     };
-    const wiz: WebviewWizard = new WebviewWizard("sample1", "sample1", context, def);
+    let data = new Map<string,string>();
+    data.set("addusername", "bob");
+    const wiz: WebviewWizard = new WebviewWizard("sample1", "sample1", context, def, data);
     return wiz;
   }
 
@@ -123,7 +125,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
           }
         ]
     };
-    const wiz: WebviewWizard = new WebviewWizard("sample3", "sample3", context, def);
+    const wiz: WebviewWizard = new WebviewWizard("sample3", "sample3", context, def, new Map<string,string>());
     return wiz;
   }
 
@@ -209,6 +211,6 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
             }
         }
     };
-    const wiz: WebviewWizard = new WebviewWizard("sample1", "sample1", context, def);
+    const wiz: WebviewWizard = new WebviewWizard("sample1", "sample1", context, def, new Map<string,string>());
     return wiz;
 }
