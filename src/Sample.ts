@@ -219,10 +219,11 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
             getNextPage(page:IWizardPage, data: any): IWizardPage | null {
                 if( page.getDescription() === 'Age Page') {
                     var age : Number = Number(data.age);
+                    const tmp = page.getWizard();
                     if( age >= 18 ) {
-                        return page.getWizard().getPage('Page 2');
+                        return tmp === null ? null : tmp.getPage('Page 2');
                     }
-                    return page.getWizard().getPage('Page 3');
+                    return tmp === null ? null : tmp.getPage('Page 3');
                 }
                 return null;
             },
@@ -230,7 +231,8 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 if( page.getDescription() === 'Age Page') {
                     return null;
                 }
-                return page.getWizard().getPage('Page 1');
+                const tmp = page.getWizard();
+                return tmp === null ? null : tmp.getPage('Page 1');
             }
         }
     };

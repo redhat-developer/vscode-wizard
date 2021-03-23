@@ -3,10 +3,9 @@ import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 import * as vscode from 'vscode';
 import { MesssageMapping, Template, HandlerResponse } from "./pageImpl";
-import { createOrShowWizard, disposeWizard, sendInitialData } from "./pageImpl";
+import { createOrShowWizard, disposeWizard, sendInitialData, LIGHT_MODE, DARK_MODE } from "./pageImpl";
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager } from './IWizardWorkflowManager';
-import { stringify } from 'querystring';
 
 export class WebviewWizard extends Wizard implements IWizard {
     context:  vscode.ExtensionContext;
@@ -139,7 +138,10 @@ export class WebviewWizard extends Wizard implements IWizard {
             this.definition.workflowManager.performFinish(this, data);
         }
         this.close();
-        return null;
+        return {
+            returnObject: {},
+            templates: []
+        };
     }
 
     close(): void {
@@ -186,11 +188,10 @@ export class WebviewWizard extends Wizard implements IWizard {
             this.id,
             this.type,
             this.title,
-            "pages",
-            "stub.html",
             this.context,
             [this.readyMapping, this.validateMapping, this.backPressedMapping,
-                this.nextPressedMapping, this.finishPressedMapping]
+                this.nextPressedMapping, this.finishPressedMapping],
+            LIGHT_MODE // TODO abstact out to main constructor somewhere? 
           );
 
         // organize initial data

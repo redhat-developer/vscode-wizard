@@ -6,6 +6,8 @@ import * as handlebars from 'handlebars';
 
 
 
+export const LIGHT_MODE = 1;
+export const DARK_MODE  = 2;
 export type MessageHandler = (parameters?: any) => Promise<HandlerResponse>;
 export interface Template {
   id: string;
@@ -78,7 +80,33 @@ export function disposeWizard(name: string) {
     panel.dispose();
   }
 }
+
+export function asVSCodeResource(resource:string) : vscode.Uri {
+  return vscode.Uri.file(path.join(resource, '/')).with(
+    {
+      scheme: 'vscode-resource',
+    }
+  );
+}
+
+
 export function createOrShowWizard(
+  name: string,
+  viewType: string,
+  title: string,
+  context: vscode.ExtensionContext,
+  messageMappings: MesssageMapping[],
+  mode: number
+) {
+  if( mode == LIGHT_MODE ) {
+    createOrShowWizardInternal(name, viewType, title, "pages", "stub.html", context, messageMappings);
+  } else if( mode === DARK_MODE ) {
+    // Same for now
+    createOrShowWizardInternal(name, viewType, title, "pages", "stub.html", context, messageMappings);
+  }
+}
+
+export function createOrShowWizardInternal(
   name: string,
   viewType: string,
   title: string,
@@ -87,16 +115,25 @@ export function createOrShowWizard(
   context: vscode.ExtensionContext,
   messageMappings: MesssageMapping[]
 ) {
+  const rootString = path.join(context.extensionPath, base);
+  const pagePath = path.join(rootString, page);
+  createOrShowWizardWithPaths(name, viewType, title, context, messageMappings, rootString, pagePath);
+}
+
+export function createOrShowWizardWithPaths(
+  name: string,
+  viewType: string,
+  title: string,
+  context: vscode.ExtensionContext,
+  messageMappings: MesssageMapping[],
+  rootPath: string,
+  pagePath: string
+) {
   let panel = currentPanels.get(name);
   if (panel) {
     panel.reveal();
   } else {
-    const rootString = path.join(context.extensionPath, base);
-    const localResourceRoots = vscode.Uri.file(path.join(rootString, '/')).with(
-      {
-        scheme: 'vscode-resource',
-      }
-    );
+    const rootStringAsVSCodeUri: vscode.Uri = asVSCodeResource(rootPath);
     panel = vscode.window.createWebviewPanel(
       viewType,
       title,
@@ -104,17 +141,16 @@ export function createOrShowWizard(
       {
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [localResourceRoots],
+        localResourceRoots: [rootStringAsVSCodeUri],
       }
     );
-
-    const pagePath = path.join(rootString, page);
-    panel.webview.html = fs
+    const contents : string = fs
       .readFileSync(pagePath, 'utf-8')
-      .replace('{{base}}', localResourceRoots.toString())
+      .replace('{{base}}', rootStringAsVSCodeUri.toString())
       .replace('"{{init}}"', initJS);
+    panel.webview.html = contents;
     panel.webview.onDidReceiveMessage(
-      createDispatch(messageMappings, panel, context)
+      createDispatch(messageMappings, panel, rootPath)
     );
     panel.onDidDispose(
       () => currentPanels.delete(name),
@@ -128,7 +164,7 @@ export function createOrShowWizard(
 function createDispatch(
   messageMappings: MesssageMapping[],
   currentPanel: vscode.WebviewPanel,
-  context: vscode.ExtensionContext
+  resourceRoot: string
 ) {
   const handler = (message: any) => {
     const mapping = messageMappings.find(
@@ -159,7 +195,7 @@ function createDispatch(
                 body: handlebars.compile(
                   fs
                     .readFileSync(
-                      path.join(context.extensionPath, template.contentUrl)
+                      path.join(resourceRoot, template.contentUrl)
                     )
                     .toString()
                 )(result),
