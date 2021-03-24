@@ -98,26 +98,16 @@ export function createOrShowWizard(
   messageMappings: MesssageMapping[],
   mode: number
 ) {
+  const root: string = require.resolve('vscode-wizard');
+  const pages: string = path.join(root, "../", "../", "pages").normalize();
+  const html: string = path.join(pages, "stub.html");
+
   if( mode == LIGHT_MODE ) {
-    createOrShowWizardInternal(name, viewType, title, "pages", "stub.html", context, messageMappings);
+    createOrShowWizardWithPaths(name, viewType, title, context, messageMappings, pages, html);
   } else if( mode === DARK_MODE ) {
     // Same for now
-    createOrShowWizardInternal(name, viewType, title, "pages", "stub.html", context, messageMappings);
+    createOrShowWizardWithPaths(name, viewType, title, context, messageMappings, pages, html);
   }
-}
-
-export function createOrShowWizardInternal(
-  name: string,
-  viewType: string,
-  title: string,
-  base: string,
-  page: string,
-  context: vscode.ExtensionContext,
-  messageMappings: MesssageMapping[]
-) {
-  const rootString = path.join(context.extensionPath, base);
-  const pagePath = path.join(rootString, page);
-  createOrShowWizardWithPaths(name, viewType, title, context, messageMappings, rootString, pagePath);
 }
 
 export function createOrShowWizardWithPaths(
