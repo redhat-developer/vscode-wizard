@@ -77,6 +77,7 @@ export function sendInitialData(wizardName: string, data: Map<string,string>) {
 export function disposeWizard(name: string) {
   let panel = currentPanels.get(name);
   if (panel) {
+    currentPanels.delete(name);
     panel.dispose();
   }
 }
@@ -98,8 +99,8 @@ export function createOrShowWizard(
   messageMappings: MesssageMapping[],
   mode: number
 ) {
-  const root: string = require.resolve('vscode-wizard');
-  const pages: string = path.join(root, "../", "../", "pages").normalize();
+
+  const pages: string = path.join(__dirname, "../", "pages").normalize();
   const html: string = path.join(pages, "stub.html");
 
   if( mode == LIGHT_MODE ) {
@@ -140,7 +141,7 @@ export function createOrShowWizardWithPaths(
       .replace('"{{init}}"', initJS);
     panel.webview.html = contents;
     panel.webview.onDidReceiveMessage(
-      createDispatch(messageMappings, panel, rootPath)
+      createDispatch(messageMappings, name, rootPath)
     );
     panel.onDidDispose(
       () => currentPanels.delete(name),
@@ -153,7 +154,7 @@ export function createOrShowWizardWithPaths(
 
 function createDispatch(
   messageMappings: MesssageMapping[],
-  currentPanel: vscode.WebviewPanel,
+  currentPanelName: string,
   resourceRoot: string
 ) {
   const handler = (message: any) => {
@@ -200,7 +201,10 @@ function createDispatch(
         } else {
           response.result = result;
         }
-        currentPanel.webview.postMessage(response);
+        const panel: vscode.WebviewPanel | undefined = currentPanels.get(currentPanelName);
+        if( panel && panel !== undefined) {
+          panel.webview.postMessage(response);
+        }
       });
     } else {
       vscode.window.showErrorMessage(
