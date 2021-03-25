@@ -7,7 +7,7 @@ vscode-wizard is an npm module to display wizards in webviews inside VS Code.  I
 This library provides an API to display wizards via Webviews in VSCode.
 
 # How to use from a VS Code extension
-See https://github.com/redhat-developer/vscode-wizard
+See https://github.com/robstryker/vscode-wizard-example-extension
 
 # How it works
 To open a webview wizard, you pass a WizardDefinition into a WebviewWizard constructor as follows:
