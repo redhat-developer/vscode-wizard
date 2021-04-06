@@ -279,8 +279,6 @@ a:focus, textarea:focus {
 }
 textarea{
     margin-left: 10px;
-    width:100%;
-    height:calc(100vh - 244px);
     overflow:scroll;
     resize: none;
 }
