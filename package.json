@@ -1,6 +1,6 @@
 {
   "name": "@redhat-developer/vscode-wizard",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Provides Wizard APIs for use in VSCode",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -15,6 +15,14 @@
     "/lib",
     "/pages"
   ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "ext.home",
+        "title": "Show Example Page"
+      }
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redhat-developer/vscode-wizard.git"

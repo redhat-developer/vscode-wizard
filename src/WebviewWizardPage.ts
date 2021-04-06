@@ -50,7 +50,8 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
 
     selectAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
         let iv = this.getInitialValue(oneField, data);
-        let ret : string = "<label for=\"" + oneField.id + "\">" + oneField.label + "</label>\n" + 
+        let ret : string = "<label for=\"" + oneField.id + "\">" + oneField.label + "</label><br/>\n" + 
+        (oneField.description === undefined ? "" : oneField.description + "<br>\n") +
         "<select name=\"" + oneField.id + "\" id=\"" + oneField.id + "\" onchange=\"fieldChanged('" + oneField.id + "')\">\n";
         if( oneField.properties && oneField.properties?.options) {
             for( let oneOpt of oneField.properties?.options ) {
@@ -69,7 +70,8 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
             return this.textBoxAsHTML(oneField, data);
         } 
         // actual combo here
-        let label : string =  "<label for=\"" + oneField.id + "\">" + oneField.label + "</label>\n";
+        let label : string =  "<label for=\"" + oneField.id + "\">" + oneField.label + "</label><br/>\n";
+        let desc : string = (oneField.description === undefined ? "" : oneField.description + "<br>\n");
         let text : string =  "<input type=\"text\" name=\"" + oneField.id + "\" " + 
                                 "list=\"" + oneField.id + "InternalList\" " + 
                                 "id=\"" + oneField.id + "\"" + (iv ? "value=\"" + iv + "\"" : "") + " onchange=\"fieldChanged('" + oneField.id + "')\"/>\n";
@@ -87,15 +89,18 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
             dataList = dataList + "   <option value=\"" + oneOpt + "\"" + (selected ? " selected" : "") + ">\n";
         }
         dataList = dataList + "</datalist>\n";
-        let ret = label + text + dataList;
+        let ret = label + desc + text + dataList;
         ret = ret +  "<div id=\"" + oneField.id + "Validation\">&nbsp;</div>\n\n";
         return ret;
     }
 
     textBoxAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
         let iv = this.getInitialValue(oneField, data);
-        let ret = "<label for=\"" + oneField.id + "\">" + oneField.label + "</label>\n" + 
-        "<input type=text id=\"" + oneField.id + "\" " +
+        let ret = "<label for=\"" + oneField.id + "\">" + oneField.label + "</label><br/>\n";
+        if( oneField.description !== undefined ) {
+            ret += oneField.description + "<br/>\n";
+        } 
+        ret += "<input type=text id=\"" + oneField.id + "\" " +
         (iv ? "value=\"" + iv + "\" " : "") +
         "oninput=\"fieldChanged('" + oneField.id + "')\"><br>\n" + 
         "<div id=\"" + oneField.id + "Validation\">&nbsp;</div>\n\n";
@@ -104,18 +109,26 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
 
     checkBoxAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
         let iv = this.getInitialValue(oneField, data);
-        let ret = "<input type=\"checkbox\" id=\"" + oneField.id + "\" name=\"" + oneField.id + "\"" +
+        let ret = "";
+        if( oneField.description !== undefined ) {
+            ret += oneField.id + "<br/>\n";
+            ret += oneField.description + "<br/>\n";
+        }
+        ret += "<input type=\"checkbox\" id=\"" + oneField.id + "\" name=\"" + oneField.id + "\"" +
         " oninput=\"fieldChangedWithVal('" + oneField.id + "', document.getElementById('" + oneField.id + "').checked)\"" +
             (iv ? " checked" : "") + ">" + 
-            "<label for=\"" + oneField.id + "\">" + oneField.label + "</label>\n" + 
-        "<div id=\"" + oneField.id + "Validation\">&nbsp;</div>\n\n";
+            "<label for=\"" + oneField.id + "\">" + oneField.label + "</label>\n"; 
+        ret += "<div id=\"" + oneField.id + "Validation\">&nbsp;</div>\n\n";
         return ret;
     }
 
     textAreaAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
         let iv = this.getInitialValue(oneField, data);
-        let ret: string =  oneField.label + 
-        "<textarea id=\"" + oneField.id + "\" name=\"" + oneField.id + "\" ";
+        let ret: string =  oneField.label + "<br/>\n";
+        if( oneField.description !== undefined ) {
+            ret += oneField.description + "<br/>\n";
+        }
+        ret += "<textarea id=\"" + oneField.id + "\" name=\"" + oneField.id + "\" ";
         if( oneField.properties ) {
             if( oneField.properties.rows ) {
                 ret = ret + "rows=\"" + oneField.properties.rows + "\" ";
@@ -136,8 +149,13 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
 
 
     radioGroupAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
+        let ret = "";
+
         let iv = this.getInitialValue(oneField, data);
-        let ret = "<label for=\"" + oneField.id + "\">" + oneField.label + "</label><br/>\n";
+        ret += "<label for=\"" + oneField.id + "\">" + oneField.label + "</label><br/>\n";
+        if( oneField.description !== undefined ) {
+            ret += oneField.description + "<br>\n";
+        }
         if( oneField.properties && oneField.properties?.options) {
             for( let oneOpt of oneField.properties?.options ) {
                 let selected: boolean = iv ? (iv === oneOpt) : false;
