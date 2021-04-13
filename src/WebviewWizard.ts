@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { MesssageMapping, Template, HandlerResponse } from "./pageImpl";
 import { createOrShowWizard, disposeWizard, sendInitialData, LIGHT_MODE, DARK_MODE } from "./pageImpl";
 import { WebviewWizardPage } from './WebviewWizardPage';
-import { IWizardWorkflowManager } from './IWizardWorkflowManager';
+import { IWizardWorkflowManager, PerformFinishResponse } from './IWizardWorkflowManager';
 
 export class WebviewWizard extends Wizard implements IWizard {
     context:  vscode.ExtensionContext;
@@ -134,14 +134,25 @@ export class WebviewWizard extends Wizard implements IWizard {
     }
 
     finishImpl(data: any) : HandlerResponse {
+        let resp : PerformFinishResponse | null = null;
         if( this.definition.workflowManager !== undefined ) {
-            this.definition.workflowManager.performFinish(this, data);
+            resp = this.definition.workflowManager.performFinish(this, data);
         }
-        this.close();
-        return {
-            returnObject: {},
-            templates: []
-        };
+        if( resp == null ) {
+            this.close();
+            return {
+                returnObject: {},
+                templates: []
+            };
+        } else {
+            if( resp.close ) {
+                this.close();
+            }
+            return {
+                returnObject: resp.returnObject,
+                templates: resp.templates
+            };
+        }
     }
 
     close(): void {

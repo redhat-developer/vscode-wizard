@@ -100,6 +100,7 @@ export function createOrShowWizard(
   mode: number
 ) {
 
+  // TODO change these values for light vs dark mode?
   const pages: string = path.join(__dirname, "../", "pages").normalize();
   const html: string = path.join(pages, "stub.html");
 

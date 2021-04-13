@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { WebviewWizard, WizardDefinition } from './WebviewWizard';
 import { IWizardPage } from './IWizardPage';
+import { PerformFinishResponse } from './IWizardWorkflowManager';
 
 export function getTwoPageLinearSampleWizardWithValidation(context: vscode.ExtensionContext) : WebviewWizard {
     let def : WizardDefinition = {
@@ -207,7 +208,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 return data.age !== undefined && 
                 (data.cc !== undefined || data.favcolor !== undefined);
             },
-            performFinish(wizard:WebviewWizard, data: any): void {
+            performFinish(wizard:WebviewWizard, data: any): PerformFinishResponse | null {
                 // Do something
                 var age : Number = Number(data.age);
                 if( age >= 18 ) {
@@ -215,6 +216,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 } else {
                     vscode.window.showInformationMessage('Child has favorite color: ' + data.favcolor);
                 }
+                return null;
             },
             getNextPage(page:IWizardPage, data: any): IWizardPage | null {
                 if( page.getDescription() === 'Age Page') {
