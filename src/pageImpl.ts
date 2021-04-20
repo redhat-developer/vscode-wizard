@@ -6,8 +6,6 @@ import * as handlebars from 'handlebars';
 
 
 
-export const LIGHT_MODE = 1;
-export const DARK_MODE  = 2;
 export type MessageHandler = (parameters?: any) => Promise<HandlerResponse>;
 export interface Template {
   id: string;
@@ -96,20 +94,12 @@ export function createOrShowWizard(
   viewType: string,
   title: string,
   context: vscode.ExtensionContext,
-  messageMappings: MesssageMapping[],
-  mode: number
-) {
+  messageMappings: MesssageMapping[]) {
 
-  // TODO change these values for light vs dark mode?
   const pages: string = path.join(__dirname, "../", "pages").normalize();
   const html: string = path.join(pages, "stub.html");
 
-  if( mode == LIGHT_MODE ) {
-    createOrShowWizardWithPaths(name, viewType, title, context, messageMappings, pages, html);
-  } else if( mode === DARK_MODE ) {
-    // Same for now
-    createOrShowWizardWithPaths(name, viewType, title, context, messageMappings, pages, html);
-  }
+  createOrShowWizardWithPaths(name, viewType, title, context, messageMappings, pages, html);
 }
 
 export function createOrShowWizardWithPaths(

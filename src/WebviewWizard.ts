@@ -3,7 +3,7 @@ import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 import * as vscode from 'vscode';
 import { MesssageMapping, Template, HandlerResponse } from "./pageImpl";
-import { createOrShowWizard, disposeWizard, sendInitialData, LIGHT_MODE, DARK_MODE } from "./pageImpl";
+import { createOrShowWizard, disposeWizard, sendInitialData} from "./pageImpl";
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager, PerformFinishResponse } from './IWizardWorkflowManager';
 
@@ -19,6 +19,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     id: string;
     type: string;
     title: string;
+    description: string;
     definition: WizardDefinition;
     initialData: Map<string, string>;
 
@@ -30,6 +31,7 @@ export class WebviewWizard extends Wizard implements IWizard {
         this.id = id;
         this.type = type;
         this.title = definition.title;
+        this.description = definition.description;
 
         this.context = context2;
         this.readyMapping = {
@@ -161,8 +163,10 @@ export class WebviewWizard extends Wizard implements IWizard {
 
     getShowCurrentPageTemplates(parameters: any) : Template[] {
         return [
-            { id: "title", content: this.getCurrentPageName()},
-            { id: "description", content: this.getCurrentPageDescription()},
+            { id: "wizardTitle", content: this.title},
+            { id: "wizardDescription", content: this.description},
+            { id: "pageTitle", content: this.getCurrentPageName()},
+            { id: "pageDescription", content: this.getCurrentPageDescription()},
             { id: "content", content: this.getCurrentPageContent(parameters)},
             { id: "wizardControls", content: this.getUpdatedWizardControls(parameters, true)}
         ];
@@ -201,16 +205,23 @@ export class WebviewWizard extends Wizard implements IWizard {
             this.title,
             this.context,
             [this.readyMapping, this.validateMapping, this.backPressedMapping,
-                this.nextPressedMapping, this.finishPressedMapping],
-            LIGHT_MODE // TODO abstact out to main constructor somewhere? 
+                this.nextPressedMapping, this.finishPressedMapping]
           );
 
         // organize initial data
         let m = new Map<string, string>();
         for( let p of this.definition.pages) {
             p.fields.forEach(element => {
-                if( element.initialValue ) {
-                    m.set(element.id, element.initialValue);
+                if( isWizardPageSectionDefinition(element)) {
+                    for( let p2 of element.childFields ) {
+                        if( p2.initialValue ) {
+                            m.set(p2.id, p2.initialValue);
+                        }
+                    }
+                } else if( isWizardPageFieldDefinition(element) ) {
+                    if( element.initialValue ) {
+                        m.set(element.id, element.initialValue);
+                    }
                 }
             });
         }
@@ -263,16 +274,32 @@ export interface WizardDefinition {
 export interface WizardPageDefinition {
     title: string;
     description: string;
-    fields: WizardPageFieldDefinition[];
+    fields: (WizardPageFieldDefinition | WizardPageSectionDefinition)[];
     validator?: WizardPageValidator;
   }
-  
+
+  export interface WizardPageSectionDefinition {
+    id: string;
+    label: string;
+    description?: string;
+    childFields: WizardPageFieldDefinition[]
+  }
+
+  export function isWizardPageSectionDefinition(def: WizardPageFieldDefinition | WizardPageSectionDefinition): def is WizardPageSectionDefinition {
+    return (def as any).childFields !== undefined
+  }
+
+  export function isWizardPageFieldDefinition(def: WizardPageFieldDefinition | WizardPageSectionDefinition): def is WizardPageFieldDefinition {
+    return (def as any).type !== undefined
+  }
+
 export interface WizardPageFieldDefinition {
     id: string;
     type: string;
     label: string;
     description?: string;
     initialValue?: string;
+    placeholder?: string,
     properties?: any;
     optionProvider?: WizardPageFieldOptionProvider;
 }
