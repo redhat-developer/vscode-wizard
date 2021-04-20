@@ -133,10 +133,10 @@ export class WebviewWizard extends Wizard implements IWizard {
         };
     }
 
-    finishImpl(data: any) : HandlerResponse {
+    async finishImpl(data: any) : Promise<HandlerResponse> {
         let resp : PerformFinishResponse | null = null;
         if( this.definition.workflowManager !== undefined ) {
-            resp = this.definition.workflowManager.performFinish(this, data);
+            resp = await this.definition.workflowManager.performFinish(this, data);
         }
         if( resp == null ) {
             this.close();

@@ -208,7 +208,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 return data.age !== undefined && 
                 (data.cc !== undefined || data.favcolor !== undefined);
             },
-            performFinish(wizard:WebviewWizard, data: any): PerformFinishResponse | null {
+            performFinish(wizard:WebviewWizard, data: any): Promise<PerformFinishResponse | null> {
                 // Do something
                 var age : Number = Number(data.age);
                 if( age >= 18 ) {
@@ -216,7 +216,9 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 } else {
                     vscode.window.showInformationMessage('Child has favorite color: ' + data.favcolor);
                 }
-                return null;
+                return new Promise<PerformFinishResponse | null>((res,rej) => {
+                    res(null);
+                });
             },
             getNextPage(page:IWizardPage, data: any): IWizardPage | null {
                 if( page.getDescription() === 'Age Page') {

@@ -4,7 +4,7 @@ import { Template } from "./pageImpl";
 
 export interface IWizardWorkflowManager {
     canFinish(wizard:WebviewWizard, data: any): boolean;
-    performFinish(wizard:WebviewWizard, data: any): PerformFinishResponse | null;
+    performFinish(wizard:WebviewWizard, data: any): Promise<PerformFinishResponse | null>;
     getNextPage?(page:IWizardPage, data: any): IWizardPage | null;
     getPreviousPage?(page:IWizardPage, data: any): IWizardPage | null;
     performCancel?(): void;
