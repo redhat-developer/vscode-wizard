@@ -67,25 +67,72 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
             description: "Example description",
             fields: [
                 {
+                    id: "happyfuntimesection",
+                    label: "Happy Fun Time",
+                    description: "Happy Fun Time is where we go to pick the settings that spark joy for us!", 
+                    childFields: [
+                        {
+                            id: "yourHappyTime",
+                            label: "Your Happy Time",
+                            description: "Where do you have your happy time?",
+                            type: "textbox",
+                            initialValue: "Cloud Kuku Land"
+                        }
+                    ]
+                },
+                {
                     id: "addusername",
                     label: "Username",
+                    description: "Enter a valid username above",
                     type: "textbox",
                     initialValue: "Textbox initial value"
+                },
+                {
+                    id: "addusernameNoDescNoInitialValue",
+                    label: "Username No Desc No InitialValue",
+                    type: "textbox",
+                    placeholder: "Placeholder Text"
                 },
                 {
                     id: "over18",
                     label: "Over 18?",
                     type: "checkbox",
+                    description: "Is the user of legal age? This is important.",
                     initialValue: "true"
+                },
+                {
+                    id: "over18NoDesc",
+                    label: "Over 18? No Desc",
+                    type: "checkbox",
+                    initialValue: "true"
+                },
+                {
+                    id: "actualAge",
+                    label: "Age",
+                    description: "How old are you really?!",
+                    type: "number",
+                    initialValue: "15"
                 },
                 {
                     id: "bio",
                     label: "Biography",
                     type: "textarea",
-                    initialValue: "this is weird\nblahblah",
+                    description: "Tell us why you think you'd make a great lizard.",
+                    initialValue: "I am a great lizard because I come from a family with a long history of being lizards.",
                     properties: {
                         rows: "4",
-                        columns: "10"
+                        columns: "30"
+                    }
+                },
+                {
+                    id: "bioNoInitialValue",
+                    label: "Biography",
+                    type: "textarea",
+                    description: "Tell us why you think you'd make a great lizard.",
+                    placeholder: "List all your lizard qualities here",
+                    properties: {
+                        rows: "4",
+                        columns: "30"
                     }
                 },
                 {
@@ -93,6 +140,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                     label: "Gender",
                     type: "radio",
                     initialValue: "male",
+                    description: "Tell us how you identify?",
                     properties: {
                         options: [
                             "male", "female", "other"
@@ -103,6 +151,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                     id: "favparent",
                     label: "Favorite Parent",
                     type: "select",
+                    description: "Who do you love more?",
                     initialValue: "mom",
                     properties: {
                         options: [
@@ -115,6 +164,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                     label: "Religion",
                     type: "combo",
                     initialValue: "Pastafarian",
+                    description: "Which set of myths do you believe?",
                     properties: {
                         options: [
                            "Jedi", "Pastafarian"
@@ -124,6 +174,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 {
                     id: "favoriteLanguage",
                     label: "Favorite Programming Language",
+                    description: "Which programming language sucks the least?",
                     type: "combo",
                     initialValue: "Java",
                     optionProvider: (parameters:any) => {
@@ -134,7 +185,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                         ret.push("Brainfuck");
                         return ret;
                     }
-                }                
+                }
             ],
             validator: (parameters:any) => {
                 let templates = [];
@@ -167,7 +218,8 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                   {
                       id: "age",
                       label: "Age",
-                      type: "textbox"
+                      type: "textbox",
+                      description: "Let us know how old you are!"
                   }
               ],
               validator: (parameters:any) => {
@@ -208,7 +260,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 return data.age !== undefined && 
                 (data.cc !== undefined || data.favcolor !== undefined);
             },
-            performFinish(wizard:WebviewWizard, data: any): PerformFinishResponse | null {
+            performFinish(wizard:WebviewWizard, data: any): Promise<PerformFinishResponse | null> {
                 // Do something
                 var age : Number = Number(data.age);
                 if( age >= 18 ) {
@@ -216,7 +268,9 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 } else {
                     vscode.window.showInformationMessage('Child has favorite color: ' + data.favcolor);
                 }
-                return null;
+                return new Promise<PerformFinishResponse | null>((res,rej) => {
+                    res(null);
+                });
             },
             getNextPage(page:IWizardPage, data: any): IWizardPage | null {
                 if( page.getDescription() === 'Age Page') {
