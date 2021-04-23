@@ -1,12 +1,14 @@
 import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 export class WizardPage implements IWizardPage {
+    id: string;
     name: string;
     description: string;
     isPageCompleteVar: boolean;
     wizard: IWizard | null;
     previousPage: IWizardPage | null;
-    constructor(pageName: string, description: string) {
+    constructor(pageId: string, pageName: string, description: string) {
+        this.id = pageId;
         this.name = pageName;
         this.description = description;
         this.wizard = null;
@@ -15,6 +17,9 @@ export class WizardPage implements IWizardPage {
     }
     canFlipToNextPage(): boolean {
         return this.isPageComplete() && this.getNextPage() !== null;
+    }
+    getId(): string {
+        return this.id;
     }
     getName(): string {
         return this.name;

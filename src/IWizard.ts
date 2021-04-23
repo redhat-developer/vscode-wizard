@@ -3,7 +3,7 @@ import { IWizardPage } from "./IWizardPage";
 export interface IWizard {
     addPages(): void;
     getStartingPage(): IWizardPage | null;
-    getPage(pageName:String): IWizardPage | null;
+    getPage(pageId:String): IWizardPage | null;
     getPageCount(): number;
     getPages(): IWizardPage[];
     needsPreviousAndNextButtons(): boolean;

@@ -37,10 +37,10 @@ export class Wizard implements IWizard {
 		}
 		return this.pages[index - 1];
     }
-    getPage(name: String): IWizardPage | null{
+    getPage(id: String): IWizardPage | null{
         for (let page of this.pages) {
-			let pageName: String = page.getName();
-			if (pageName === name) {
+			let pageId: String = page.getId();
+			if (pageId === id) {
 				return page;
 			}
 		}
