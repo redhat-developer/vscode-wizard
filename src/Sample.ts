@@ -192,7 +192,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 const username = parameters.addusername;
                 if( username === 'b') {
                     templates.push({ id: "addusernameValidation", 
-                    content: "Username must not be 'b'"});
+                    content: "<i class=\"icon icon__error\"></i>Username must not be 'b'"});
                 }
                 return templates;
             }
