@@ -3,6 +3,7 @@ import { IWizard } from "./IWizard";
 export interface IWizardPage {
     canFlipToNextPage(): boolean;
     getName(): string;
+    getId(): string;
     getDescription(): string;
     getNextPage(): IWizardPage | null;
     getPreviousPage(): IWizardPage | null;

@@ -5,7 +5,7 @@ import { Template } from './pageImpl';
 export class WebviewWizardPage extends WizardPage implements IWizardPage {
     definition:WizardPageDefinition; 
     constructor(definition: WizardPageDefinition) {
-        super(definition.title, definition.description);
+        super(definition.id, definition.title, definition.description);
         this.definition = definition;
     }
     getValidationTemplates(parameters:any) {
@@ -120,6 +120,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         let placeholderSegment = !oneField.initialValue && oneField.placeholder ? " placeholder=\"" + oneField.placeholder + "\"" : "";
         
         let input = "<input id=\"" + oneField.id + "\" name=\"" + oneField.id + "\" type=\"text\"" 
+                + (iv ? "value=\"" + iv + "\"" : "")
                 + initialValueSegment + placeholderSegment + this.onInputFieldChanged(oneField.id) + " data-setting data-setting-preview>";
         let validationDiv =  this.validationDiv(oneField.id, 0);
 
@@ -142,6 +143,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         let placeholderSegment = !oneField.initialValue && oneField.placeholder ? " placeholder=\"" + oneField.placeholder + "\"" : "";
         
         let input = "<input id=\"" + oneField.id + "\" name=\"" + oneField.id + "\" type=\"number\"" 
+                + (iv ? "value=\"" + iv + "\"" : "")
                 + initialValueSegment + placeholderSegment + this.onInputFieldChanged(oneField.id) + " data-setting data-setting-preview>";
         let validationDiv =  this.validationDiv(oneField.id, 0);
 

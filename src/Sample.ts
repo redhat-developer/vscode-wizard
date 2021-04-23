@@ -6,12 +6,13 @@ import { Template } from './pageImpl';
 
 export function getTwoPageLinearSampleWizardWithValidation(context: vscode.ExtensionContext) : WebviewWizard {
     let def : WizardDefinition = {
-      title: "Sample Wizard", 
-      description: "A wizard to sample - description",
+      title: "Two Page Linear Wizard", 
+      description: "This is a two page wizard with a linear workflow",
       pages: [
         {
-            title: "Page 1",
-            description: "Example description",
+            id: 'page1',
+            title: "Who Are You?",
+            description: "Before we can proceed, tell me who you are!",
             fields: [
                 {
                     id: "addusername",
@@ -39,8 +40,9 @@ export function getTwoPageLinearSampleWizardWithValidation(context: vscode.Exten
             }
           }, 
           {
-            title: "Page 2",
-            description: "Example description",
+            id: 'page2',
+            title: "Stuff You Like",
+            description: "Tell us more about yourself!",
             fields: [
                 {
                     id: "favcolor",
@@ -69,12 +71,13 @@ export function getTwoPageLinearSampleWizardWithValidation(context: vscode.Exten
 
 export function demonstrateSinglePageAllControls(context: vscode.ExtensionContext) : WebviewWizard {
     let def : WizardDefinition = {
-      title: "Sample Wizard", 
-      description: "A wizard to sample - description",
+      title: "Control Demonstration Wizard", 
+      description: "A wizard to demonstrate all the currently supported controls on one single page!",
       pages: [
         {
-            title: "Page 1",
-            description: "Example description",
+            id: 'page1',
+            title: "Shiny Input Objects",
+            description: "On this page, you can look at all the shiny input objects we support",
             fields: [
                 {
                     id: "happyfuntimesection",
@@ -227,12 +230,13 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
   export function getThreePageBranchWorkflowSampleWizardWithValidation(context: vscode.ExtensionContext) : WebviewWizard {
 
     let def : WizardDefinition = {
-        title: "Sample Wizard", 
-        description: "A wizard to sample - description",
+        title: "Branch Workflow Wizard", 
+        description: "This wizard demonstrates a branch workflow, with a different second page based on the answers on your first page!",
         pages: [
           {
-              title: "Page 1",
-              description: "Age Page",
+              id: 'page1',
+              title: "Age Guardian",
+              description: "Tell us how old you are. If you're too young, you may get rejected. This is for YOUR protection (and to comply with record keeping laws for children)!",
               fields: [
                   {
                       id: "age",
@@ -252,8 +256,9 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
               }
             }, 
             {
-              title: "Page 2",
-              description: "Adult Page",
+              id: 'page2adult',
+              title: "Questions for Big Year Olds",
+              description: "This is where all the big people get to answer big-year-old stuff.",
               fields: [
                   {
                       id: "cc",
@@ -263,8 +268,9 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
               ]
             }, 
             {
-              title: "Page 3",
-              description: "Child Page",
+              id: 'page2child',
+              title: "Ask Kiddos Questions!",
+              description: "Let's ask the kiddos some questions!",
               fields: [
                   {
                       id: "favcolor",
@@ -292,22 +298,22 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 });
             },
             getNextPage(page:IWizardPage, data: any): IWizardPage | null {
-                if( page.getDescription() === 'Age Page') {
+                if( page.getId() === 'page1') {
                     var age : Number = Number(data.age);
                     const tmp = page.getWizard();
                     if( age >= 18 ) {
-                        return tmp === null ? null : tmp.getPage('Page 2');
+                        return tmp === null ? null : tmp.getPage('page2adult');
                     }
-                    return tmp === null ? null : tmp.getPage('Page 3');
+                    return tmp === null ? null : tmp.getPage('page2child');
                 }
                 return null;
             },
             getPreviousPage(page:IWizardPage, data: any): IWizardPage | null {
-                if( page.getDescription() === 'Age Page') {
+                if( page.getDescription() === 'page1') {
                     return null;
                 }
                 const tmp = page.getWizard();
-                return tmp === null ? null : tmp.getPage('Page 1');
+                return tmp === null ? null : tmp.getPage('page1');
             }
         }
     };

@@ -178,6 +178,9 @@ export class WebviewWizard extends Wizard implements IWizard {
     getCurrentPageName(): string {
         return (this.currentPage === null ? "" : this.currentPage.getName()); 
     }
+    getCurrentPageId(): string {
+        return (this.currentPage === null ? "" : this.currentPage.getId()); 
+    }
 
     getCurrentPageDescription(): string {
         return (this.currentPage === null ? "" : this.currentPage.getDescription()); 
@@ -191,7 +194,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     }
 
     getCurrentPage(): WebviewWizardPage | null {
-        const cur : IWizardPage | null = super.getPage(this.getCurrentPageName());
+        const cur : IWizardPage | null = super.getPage(this.getCurrentPageId());
         if(cur instanceof WebviewWizardPage ) 
             {return cur;}
         return null;
@@ -278,6 +281,7 @@ export interface WizardDefinition {
   
 
 export interface WizardPageDefinition {
+    id: string;
     title: string;
     description: string;
     fields: (WizardPageFieldDefinition | WizardPageSectionDefinition)[];
