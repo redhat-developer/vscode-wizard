@@ -1,6 +1,6 @@
 import { IWizardPage } from './IWizardPage';
 import { WizardPage } from './WizardPage';
-import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition } from './WebviewWizard';
+import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse } from './WebviewWizard';
 import { Template } from './pageImpl';
 export class WebviewWizardPage extends WizardPage implements IWizardPage {
     definition:WizardPageDefinition; 
@@ -25,11 +25,29 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
 
     validate(parameters: any, templates:Template[]): Template[] {
         if( this.definition.validator ) {
-            let ret: Template[] = this.definition.validator.call(null, parameters);
-            if( ret !== null && ret.length > 0 ) {
+            let resp: ValidatorResponse = this.definition.validator.call(null, parameters);
+            if( resp && resp.errors && resp.errors.length > 0 ) {
                 this.setPageComplete(false);
+                for( let oneTemplate of resp.errors) {
+                    oneTemplate.content = "<i class=\"icon icon__error\"></i>" + (oneTemplate.content ? oneTemplate.content : "");
+                }
+                templates = templates.concat(resp.errors);
             }
-            return templates.concat(ret);
+            if( resp && resp.warnings && resp.warnings.length > 0 ) {
+                for( let oneTemplate of resp.warnings) {
+                    oneTemplate.content = "<i class=\"icon icon__warn\"></i>" + (oneTemplate.content ? oneTemplate.content : "");
+                }
+                templates = templates.concat(resp.warnings);
+            }
+            if( resp && resp.infos && resp.infos.length > 0 ) {
+                for( let oneTemplate of resp.infos) {
+                    oneTemplate.content = "<i class=\"icon icon__info\"></i>" + (oneTemplate.content ? oneTemplate.content : "");
+                }
+                templates = templates.concat(resp.infos);
+            }
+            if( resp && resp.other && resp.other.length > 0 ) {
+                templates = templates.concat(resp.other);
+            }
         }
         return templates;
     }

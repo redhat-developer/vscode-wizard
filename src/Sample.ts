@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { WebviewWizard, WizardDefinition } from './WebviewWizard';
 import { IWizardPage } from './IWizardPage';
 import { PerformFinishResponse } from './IWizardWorkflowManager';
+import { Template } from './pageImpl';
 
 export function getTwoPageLinearSampleWizardWithValidation(context: vscode.ExtensionContext) : WebviewWizard {
     let def : WizardDefinition = {
@@ -19,13 +20,22 @@ export function getTwoPageLinearSampleWizardWithValidation(context: vscode.Exten
                 }
             ],
             validator: (parameters:any) => {
-                let templates = [];
+                let errors: Template[] = [];
+                let info: Template[] = [];
+
                 const username = parameters.addusername;
-                if( username === 'b') {
-                    templates.push({ id: "addusernameValidation", 
-                    content: "Username must not be 'b'"});
+                if( username === 'Max') {
+                    errors.push({ id: "addusernameValidation", 
+                    content: "Max is not allowed to use this wizard. Sorry Max!"});
                 }
-                return templates;
+                if( username === 'El Jefe') {
+                    info.push({ id: "addusernameValidation", 
+                    content: "I am overjoyed to see my overlord, El Jefe, long may he reign!"});
+                }
+                return {
+                    errors: errors,
+                    infos: info
+                };
             }
           }, 
           {
@@ -45,7 +55,7 @@ export function getTwoPageLinearSampleWizardWithValidation(context: vscode.Exten
                     templates.push({ id: "favcolorValidation", 
                     content: "Favorite Color must not be empty."});
                 }
-                return templates;
+                return {errors: templates};
             }
           }
         ]
@@ -188,13 +198,22 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 }
             ],
             validator: (parameters:any) => {
-                let templates = [];
+                let errors: Template[] = [];
+                let info: Template[] = [];
+
                 const username = parameters.addusername;
-                if( username === 'b') {
-                    templates.push({ id: "addusernameValidation", 
-                    content: "<i class=\"icon icon__error\"></i>Username must not be 'b'"});
+                if( username === 'Max') {
+                    errors.push({ id: "addusernameValidation", 
+                    content: "Max is not allowed to use this wizard. Sorry Max!"});
                 }
-                return templates;
+                if( username === 'El Jefe') {
+                    info.push({ id: "addusernameValidation", 
+                    content: "I am overjoyed to see my overlord, El Jefe, long may he reign!"});
+                }
+                return {
+                    errors: errors,
+                    infos: info
+                };
             }
           }
         ]
@@ -229,7 +248,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                       templates.push({ id: "ageValidation", 
                       content: "No babies allowed"});
                   }
-                  return templates;
+                  return {errors: templates};
               }
             }, 
             {
