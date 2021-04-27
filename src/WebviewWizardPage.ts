@@ -61,7 +61,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
                 ret += this.oneFieldAsString(oneField, data);
             }
         }
-        return ret;
+        return ret;``
     }
 
     oneSectionAsString(oneSection:WizardPageSectionDefinition, data: any) {

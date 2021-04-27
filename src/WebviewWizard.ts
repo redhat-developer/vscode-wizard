@@ -19,6 +19,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     id: string;
     type: string;
     title: string;
+    imageString: string | undefined;
     description: string;
     definition: WizardDefinition;
     initialData: Map<string, string>;
@@ -29,6 +30,7 @@ export class WebviewWizard extends Wizard implements IWizard {
         this.initialData = initialData;
         this.definition = definition;
         this.id = id;
+        this.imageString = definition.bannerIconString;
         this.type = type;
         this.title = definition.title;
         this.description = definition.description;
@@ -162,14 +164,17 @@ export class WebviewWizard extends Wizard implements IWizard {
     }
 
     getShowCurrentPageTemplates(parameters: any) : Template[] {
-        return [
-            { id: "wizardTitle", content: this.title},
-            { id: "wizardDescription", content: this.description},
-            { id: "pageTitle", content: this.getCurrentPageName()},
-            { id: "pageDescription", content: this.getCurrentPageDescription()},
-            { id: "content", content: this.getCurrentPageContent(parameters)},
-            { id: "wizardControls", content: this.getUpdatedWizardControls(parameters, true)}
-        ];
+        let ret: Template[] = [];
+        ret.push({ id: "wizardTitle", content: this.title});
+        ret.push({ id: "wizardDescription", content: this.description});
+        ret.push({ id: "pageTitle", content: this.getCurrentPageName()});
+        ret.push({ id: "pageDescription", content: this.getCurrentPageDescription()});
+        ret.push({ id: "content", content: this.getCurrentPageContent(parameters)});
+        ret.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, true)});
+        if( this.imageString !== undefined ) {
+            ret.push({id: "wizardBanner", content: this.imageString})
+        }
+        return ret;
     }
 
     generateValidationTemplates(parameters:any) {
@@ -275,6 +280,7 @@ export interface ValidatorResponse {
 export interface WizardDefinition {
     title: string;
     description: string;
+    bannerIconString?: string;
     pages: WizardPageDefinition[];
     workflowManager?: IWizardWorkflowManager;
   }
