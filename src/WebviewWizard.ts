@@ -260,7 +260,7 @@ export class WebviewWizard extends Wizard implements IWizard {
         return ret;
     }
     createButton(id: string, onclick: string, enabled: boolean, text: string): string {
-        return "<button type=\"button\" class=\"btn btn-secondary\" id=\"" + id + 
+        return "<button type=\"button\" class=\"btn btn-secondary button--big\" id=\"" + id + 
         "\" onclick=\"" + onclick + "\" " + (enabled ? "" : " disabled") + ">" + text + "</button>\n";
     }
 }
