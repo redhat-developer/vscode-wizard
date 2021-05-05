@@ -67,7 +67,6 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
     oneSectionAsString(oneSection:WizardPageSectionDefinition, data: any) {
         let ret = "";
         let onclick = " onclick=\"document.getElementById('" + oneSection.id + "').classList.toggle('collapsed');\"";
-        //let onclick = " onclick=\"console.log('test1')\"";
 
         ret += "<section id=\"" + oneSection.id + "\" class=\"section--settings section--collapsible\"" + ">\n";
         ret += "        <div class=\"section__header\" " + onclick + ">\n";
@@ -118,10 +117,13 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         let lbl = this.labelFor(oneField.id, oneField.label,0);
         let initialValueSegment = oneField.initialValue ? " value=\"" + oneField.initialValue + "\"" : "";
         let placeholderSegment = !oneField.initialValue && oneField.placeholder ? " placeholder=\"" + oneField.placeholder + "\"" : "";
+        let disabled = (oneField.properties && oneField.properties.disabled ? " disabled" : "");
+        
         
         let input = "<input id=\"" + oneField.id + "\" name=\"" + oneField.id + "\" type=\"text\"" 
                 + (iv ? "value=\"" + iv + "\"" : "")
-                + initialValueSegment + placeholderSegment + this.onInputFieldChanged(oneField.id) + " data-setting data-setting-preview>";
+                + initialValueSegment + placeholderSegment + this.onInputFieldChanged(oneField.id) + 
+                disabled + " data-setting data-setting-preview>";
         let validationDiv =  this.validationDiv(oneField.id, 0);
 
         let inner = lbl + input + validationDiv;
@@ -141,10 +143,12 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         let lbl = this.labelFor(oneField.id, oneField.label,0);
         let initialValueSegment = oneField.initialValue ? " value=\"" + oneField.initialValue + "\"" : "";
         let placeholderSegment = !oneField.initialValue && oneField.placeholder ? " placeholder=\"" + oneField.placeholder + "\"" : "";
+        let disabled = (oneField.properties && oneField.properties.disabled ? " disabled" : "");
         
         let input = "<input id=\"" + oneField.id + "\" name=\"" + oneField.id + "\" type=\"number\"" 
                 + (iv ? "value=\"" + iv + "\"" : "")
-                + initialValueSegment + placeholderSegment + this.onInputFieldChanged(oneField.id) + " data-setting data-setting-preview>";
+                + initialValueSegment + placeholderSegment + this.onInputFieldChanged(oneField.id) + 
+                disabled + " data-setting data-setting-preview>";
         let validationDiv =  this.validationDiv(oneField.id, 0);
 
         let inner = lbl + input + validationDiv;
@@ -165,9 +169,11 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         // create the input item
         let fieldChangedArg2 = " document.getElementById('" + oneField.id + "').checked";
         let oninput =  this.onInputFieldChangedWithValue(oneField.id, fieldChangedArg2);
+        let disabled = (oneField.properties && oneField.properties.disabled ? " disabled" : "");
+        
         let checked = (iv ? " checked" : "");
         let input = "<input id=\"" + oneField.id + "\" name=\"" + oneField.id + "\" type=\"checkbox\"" 
-                +oninput + " data-setting data-setting-preview" + checked + ">";
+                +oninput + " data-setting data-setting-preview" + checked + disabled + ">";
 
         let inner = input + lbl + validationDiv;
         let settingInput:string = this.divClass("setting__input",0, inner);
@@ -182,7 +188,8 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         let rows = (oneField.properties && oneField.properties.rows ? " rows=\"" + oneField.properties.rows + "\"" : "");
         let iv = this.getInitialValue(oneField, data);
         let lbl = this.labelFor(oneField.id, oneField.label,0);
-
+        let disabled = (oneField.properties && oneField.properties.disabled ? " disabled" : "");
+        
 
 
         let placeholder = (!oneField.initialValue && oneField.placeholder ? 
@@ -191,7 +198,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
 
         let oninput = this.onInputFieldChanged(oneField.id);
         let textarea = "<textarea id=\"" + oneField.id + "\" name=\"" + oneField.id + "\" " 
-            + cols + rows + oninput + placeholder + " data-setting data-setting-preview>";
+            + cols + rows + oninput + placeholder + disabled + " data-setting data-setting-preview>";
         if( iv ) {
             textarea += iv;
         }
@@ -209,7 +216,8 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
     radioGroupAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
         let iv = this.getInitialValue(oneField, data);
         let label = this.labelFor(oneField.id, oneField.label,0);
-
+        let disabled = (oneField.properties && oneField.properties.disabled ? " disabled" : "");
+        
 
         let inputs = "";
         if( oneField.properties && oneField.properties?.options) {
@@ -220,6 +228,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
                                         "\" id=\"" + oneOpt + 
                                         oninput +
                                         (selected ? " checked" : "") +
+                                        disabled + 
                                         ">\n";
                 inputs += this.labelFor(oneOpt, oneOpt,0);
             }
@@ -238,10 +247,11 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         let iv = this.getInitialValue(oneField, data);
         let label : string = this.labelFor(oneField.id, oneField.label,0);
         let oninput = this.onInputFieldChanged(oneField.id);
-
+        let disabled = (oneField.properties && oneField.properties.disabled ? " disabled" : "");
+        
         // Create the select
         let select = "<select name=\"" + oneField.id + "\" id=\"" + oneField.id + "\""
-            + oninput + " data-setting>\n";
+            + oninput + disabled + " data-setting>\n";
         if( oneField.properties && oneField.properties?.options) {
             for( let oneOpt of oneField.properties?.options ) {
                 let selected: boolean = iv ? (iv === oneOpt) : false;
@@ -266,13 +276,15 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         let iv = this.getInitialValue(oneField, data);
         let label : string = this.labelFor(oneField.id, oneField.label,0);
         let oninput = this.onInputFieldChanged(oneField.id);
-
+        let disabled = (oneField.properties && oneField.properties.disabled ? " disabled" : "");
+        
         // actual combo here
         let text : string =  "<input type=\"text\" name=\"" + oneField.id + "\" " + 
                                 "list=\"" + oneField.id + "InternalList\" " + 
                                 "id=\"" + oneField.id + "\"" + 
                                 (iv ? "value=\"" + iv + "\"" : "") + 
-                                oninput + ")\"/>\n";
+                                disabled +
+                                oninput + "/>\n";
         let dataList : string = "<datalist id=\"" + oneField.id + "InternalList\">";
         let optList = null;
         if( oneField.optionProvider ) {
