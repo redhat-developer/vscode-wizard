@@ -2,8 +2,14 @@
   "name": "@redhat-developer/vscode-wizard",
   "version": "0.2.4",
   "description": "Provides Wizard APIs for use in VSCode",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "engines": {
+    "vscode": "^1.42.0"
+  },
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./lib/wizardActivator.js",
+  "types": "./lib/wizardActivator.js",
   "scripts": {
     "build": "npm run clean && npm run compile",
     "clean": "rm -rf out || rmdir out /s /q",
