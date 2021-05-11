@@ -569,8 +569,6 @@ section {
   .vscode-light .section--settings {
     background: var(--color-background--darken-05); }
 
-.vscode-light .section--collapsible {
-  background: var(--color-background); }
 
 .section--collapsible .section__header {
   cursor: pointer;
