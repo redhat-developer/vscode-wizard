@@ -12,7 +12,7 @@ See https://github.com/robstryker/vscode-wizard-example-extension
 # How it works
 To open a webview wizard, you pass a WizardDefinition into a WebviewWizard constructor as follows:
 
-```
+```ts
     const wiz: WebviewWizard = new WebviewWizard(webviewTitle, webviewType, yourExtensionContext, definition, new Map<string,string>());
     wiz.open();
 ```
@@ -21,7 +21,7 @@ Behind the scenes, the stub html used in the webview sets up the message communi
 
 # The definition
 A webview wizard definition includes a title, a description, an array of pages, and a workflow manager. 
-```
+```ts
     let def : WizardDefinition = {
         title: "Sample Wizard", 
         description: "A wizard to sample - description",
@@ -32,7 +32,7 @@ A webview wizard definition includes a title, a description, an array of pages, 
 
 A webview definition's page consists of a title, a description, an array of fields, and an optional validator. 
 
-```
+```ts
         pages: [
           {
               title: "Page 1",
@@ -66,7 +66,7 @@ A `textarea` supports two properties: `rows` and `columns`. Types `radio`, `sele
 
 A page validator is a callback function that will return an array of error responses. Each error response includes an `id` and a `content`, where the `id` should be the name of the failing field with the `Validation` suffix, as shown below, and the `content` is the error message for display to the user. 
 
-```
+```ts
               validator: (parameters:any) => {
                   let templates = [];
                   const age : Number = Number(parameters.age);
@@ -83,7 +83,7 @@ A page validator is a callback function that will return an array of error respo
 
 The optional workflow manager must be a javascript object implementing the `IWizardWorkflowManager` interface, which has the following list of functions:
 
-```
+```ts
     canFinish(wizard: WebviewWizard, data: any): boolean;
     performFinish(wizard: WebviewWizard, data: any): void;
     getNextPage?(page: IWizardPage, data: any): IWizardPage | null;
@@ -93,7 +93,7 @@ The optional workflow manager must be a javascript object implementing the `IWiz
 
 In this object, you can check the data currently in the webview map for completeness or errors in order to determine if the page is complete, if the wizard is complete, or what pages should be next based on the current selections.  Below is an example of a workflow manager in a three-page wizard, where the first page asks how old the user is, and, depending on the answer, either page 2 (favorite color) or page 3 (credit card number) is displayed. 
 
-```
+```ts
           workflowManager: {
             canFinish(wizard:WebviewWizard, data: any): boolean {
                 return data.age !== undefined && 
