@@ -85,7 +85,7 @@ export class WebviewWizard extends Wizard implements IWizard {
 
     canFinishInternal(parameters: any): boolean {
         var ret : boolean;
-        if( this.definition.workflowManager === undefined ) {
+        if( this.definition.workflowManager === undefined || this.definition.workflowManager.canFinish === undefined) {
             ret = super.canFinish();
         } else {
             ret = this.definition.workflowManager.canFinish(this, parameters !== undefined ? parameters : {});
