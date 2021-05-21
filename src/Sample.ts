@@ -249,7 +249,10 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
               validator: (parameters:any) => {
                   let templates = [];
                   const age : Number = Number(parameters.age);
-                  if( age <= 3) {
+                  if( !parameters.age || isNaN(parameters.age)) {
+                    templates.push({ id: "ageValidation", 
+                    content: "Age must not be blank"});
+                  } else if( age <= 3) {
                       templates.push({ id: "ageValidation", 
                       content: "No babies allowed"});
                   }
@@ -310,7 +313,7 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
                 return null;
             },
             getPreviousPage(page:IWizardPage, data: any): IWizardPage | null {
-                if( page.getDescription() === 'page1') {
+                if( page.getId() === 'page1') {
                     return null;
                 }
                 const tmp = page.getWizard();
