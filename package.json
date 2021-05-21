@@ -15,14 +15,6 @@
     "/lib",
     "/pages"
   ],
-  "contributes": {
-    "commands": [
-      {
-        "command": "ext.home",
-        "title": "Show Example Page"
-      }
-    ]
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redhat-developer/vscode-wizard.git"
