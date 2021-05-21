@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { WebviewWizard } from './WebviewWizard';
-import { demonstrateSinglePageAllControls, getThreePageBranchWorkflowSampleWizardWithValidation, getTwoPageLinearSampleWizardWithValidation } from "./Sample";
+import { demonstrateSinglePageAllControls, demonstrateSinglePageAllControlsOverrideButtons,
+  getThreePageBranchWorkflowSampleWizardWithValidation, getTwoPageLinearSampleWizardWithValidation } from "./Sample";
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -20,9 +21,10 @@ function registerCommands(context: vscode.ExtensionContext) {
     const allcontrols: WebviewWizard = demonstrateSinglePageAllControls(context);
     const twopage: WebviewWizard = getTwoPageLinearSampleWizardWithValidation(context);
     const branch: WebviewWizard = getThreePageBranchWorkflowSampleWizardWithValidation(context);
+    const overrideButtons = demonstrateSinglePageAllControlsOverrideButtons(context);
     if( allcontrols && twopage && branch) {
 
     }
-    branch.open();
+    overrideButtons.open();
   }
 }

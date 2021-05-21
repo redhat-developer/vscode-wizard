@@ -178,7 +178,7 @@ export class WebviewWizard extends Wizard implements IWizard {
         return ret;
     }
 
-    generateValidationTemplates(parameters:any) {
+    generateValidationTemplates(parameters:any) : Template[] {
         return this.getCurrentPage() !== null ? this.getCurrentPage()!.getValidationTemplates(parameters) : [];
     }
     getCurrentPageName(): string {
@@ -246,6 +246,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     }
     getUpdatedWizardControls(parameters: any, validate: boolean): string {
         if( validate ) {
+            // Don't care about return value here, just want pageComplete to be set
             this.generateValidationTemplates(parameters);
         }
         let hasPrevious = (this.currentPage !== null && 

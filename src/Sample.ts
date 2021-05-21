@@ -69,7 +69,7 @@ export function getTwoPageLinearSampleWizardWithValidation(context: vscode.Exten
   }
 
 
-export function demonstrateSinglePageAllControls(context: vscode.ExtensionContext) : WebviewWizard {
+export function getSinglePageAllControlsDefinition(context: vscode.ExtensionContext) : WizardDefinition {
     let def : WizardDefinition = {
       title: "Control Demonstration Wizard", 
       description: "A wizard to demonstrate all the currently supported controls on one single page!",
@@ -221,9 +221,29 @@ export function demonstrateSinglePageAllControls(context: vscode.ExtensionContex
           }
         ]
     };
+    return def;
+  }
+
+  export function demonstrateSinglePageAllControls(context: vscode.ExtensionContext) : WebviewWizard {
+    let def : WizardDefinition = getSinglePageAllControlsDefinition(context);
     const wiz: WebviewWizard = new WebviewWizard("sample3", "sample3", context, def, 
             new Map<string,string>());
     return wiz;
+  }
+
+  export function demonstrateSinglePageAllControlsOverrideButtons(context: vscode.ExtensionContext) : WebviewWizard {
+    let def : WizardDefinition = getSinglePageAllControlsDefinition(context);
+    const wiz2: WebviewWizard = new (class MyWizard extends WebviewWizard {
+        getUpdatedWizardControls(parameters: any, validate: boolean): string {
+            if( validate ) {
+                // Don't care about return value here, just want pageComplete to be set
+                this.generateValidationTemplates(parameters);
+            }
+            let canFinishNow = this.canFinishInternal(parameters);
+            return this.createButton("buttonFinish", "finishPressed()", canFinishNow, "All Done!");
+        }
+    })("sample3", "sample3", context, def, new Map<string,string>());
+    return wiz2;
   }
 
 

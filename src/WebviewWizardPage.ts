@@ -13,7 +13,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         this.wizardDefinition = wizardDefinition;
         this.pageDefinition = pageDefinition;
     }
-    getValidationTemplates(parameters:any) {
+    getValidationTemplates(parameters:any) : Template[] {
         let templates : Template[] = [];
         for (let key of this.pageDefinition.fields) {
             if( isWizardPageSectionDefinition(key)) {
