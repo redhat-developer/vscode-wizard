@@ -6,6 +6,7 @@ import { MesssageMapping, Template, HandlerResponse } from "./pageImpl";
 import { createOrShowWizard, disposeWizard, sendInitialData} from "./pageImpl";
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager, PerformFinishResponse } from './IWizardWorkflowManager';
+import { IWizardPageRenderer } from './IWizardPageRenderer';
 
 export class WebviewWizard extends Wizard implements IWizard {
     context:  vscode.ExtensionContext;
@@ -237,7 +238,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     }
     addPages(): void {
         for( let d of this.definition.pages) {
-            let page: WebviewWizardPage = new WebviewWizardPage(d);
+            let page: WebviewWizardPage = new WebviewWizardPage(d, this.definition);
             page.setWizard(this);
             page.validate({}, []);
             this.addPage(page);
@@ -283,6 +284,7 @@ export interface WizardDefinition {
     bannerIconString?: string;
     pages: WizardPageDefinition[];
     workflowManager?: IWizardWorkflowManager;
+    renderer?: IWizardPageRenderer;
   }
   
 
