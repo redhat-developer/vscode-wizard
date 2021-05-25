@@ -1,6 +1,6 @@
 import { IWizardPage } from './IWizardPage';
 import { WizardPage } from './WizardPage';
-import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse } from './WebviewWizard';
+import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse, SEVERITY } from './WebviewWizard';
 import { Template } from './pageImpl';
 import { StandardWizardPageRenderer } from './StandardWizardPageRenderer';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
@@ -33,30 +33,29 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         return this.validate(parameters, templates);
     }
 
+    severityToImage(sev: SEVERITY): string {
+        if( sev === SEVERITY.ERROR)
+            return"<i class=\"icon icon__error\"></i>";
+        if( sev === SEVERITY.WARN)
+            return"<i class=\"icon icon__warn\"></i>";
+        if( sev === SEVERITY.INFO)
+            return"<i class=\"icon icon__info\"></i>";
+        return "";
+    }
     validate(parameters: any, templates:Template[]): Template[] {
         if( this.pageDefinition.validator ) {
             let resp: ValidatorResponse = this.pageDefinition.validator.call(null, parameters);
-            if( resp && resp.errors && resp.errors.length > 0 ) {
-                this.setPageComplete(false);
-                for( let oneTemplate of resp.errors) {
-                    oneTemplate.content = "<i class=\"icon icon__error\"></i>" + (oneTemplate.content ? oneTemplate.content : "");
+            for( let oneItem of resp.items ) {
+                // Allow users to just put the failed field id here. We add Validation
+                if( !oneItem.template.id.endsWith("Validation")) {
+                    oneItem.template.id = oneItem.template.id + "Validation";
                 }
-                templates = templates.concat(resp.errors);
-            }
-            if( resp && resp.warnings && resp.warnings.length > 0 ) {
-                for( let oneTemplate of resp.warnings) {
-                    oneTemplate.content = "<i class=\"icon icon__warn\"></i>" + (oneTemplate.content ? oneTemplate.content : "");
+                if( oneItem.severity === SEVERITY.ERROR ) {
+                    this.setPageComplete(false);
                 }
-                templates = templates.concat(resp.warnings);
-            }
-            if( resp && resp.infos && resp.infos.length > 0 ) {
-                for( let oneTemplate of resp.infos) {
-                    oneTemplate.content = "<i class=\"icon icon__info\"></i>" + (oneTemplate.content ? oneTemplate.content : "");
-                }
-                templates = templates.concat(resp.infos);
-            }
-            if( resp && resp.other && resp.other.length > 0 ) {
-                templates = templates.concat(resp.other);
+                let img: string = this.severityToImage(oneItem.severity);
+                oneItem.template.content = img + (oneItem.template.content ? oneItem.template.content : "&nbsp;");
+                templates = templates.concat(oneItem.template);
             }
         }
         return templates;

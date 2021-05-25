@@ -297,13 +297,19 @@ export class WebviewWizard extends Wizard implements IWizard {
 export type WizardPageValidator = (parameters?: any) => ValidatorResponse;
 export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
 
-export interface ValidatorResponse {
-    errors?: Template[];
-    warnings?: Template[];
-    infos?: Template[];
-    other?: Template[];
+export enum SEVERITY {
+    OTHER = 1,
+    INFO = 2,
+    WARN = 3,
+    ERROR = 4
 }
-
+export interface ValidatorResponseItem {
+    template: Template;
+    severity: SEVERITY
+}
+export interface ValidatorResponse {
+    items: ValidatorResponseItem[]
+}
 export interface WizardDefinition {
     title: string;
     description?: string;
