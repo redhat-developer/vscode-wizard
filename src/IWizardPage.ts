@@ -2,9 +2,9 @@ import { IWizard } from "./IWizard";
 
 export interface IWizardPage {
     canFlipToNextPage(): boolean;
-    getName(): string;
     getId(): string;
-    getDescription(): string;
+    getName(): string | undefined;
+    getDescription(): string | undefined;
     getNextPage(): IWizardPage | null;
     getPreviousPage(): IWizardPage | null;
     getWizard(): IWizard | null;

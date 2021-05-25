@@ -13,6 +13,11 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         this.wizardDefinition = wizardDefinition;
         this.pageDefinition = pageDefinition;
     }
+
+    getPageDefinition(): WizardPageDefinition {
+        return this.pageDefinition;
+    }
+
     getValidationTemplates(parameters:any) : Template[] {
         let templates : Template[] = [];
         for (let key of this.pageDefinition.fields) {

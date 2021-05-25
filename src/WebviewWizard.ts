@@ -21,7 +21,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     type: string;
     title: string;
     imageString: string | undefined;
-    description: string;
+    description: string | undefined;
     definition: WizardDefinition;
     initialData: Map<string, string>;
 
@@ -166,29 +166,54 @@ export class WebviewWizard extends Wizard implements IWizard {
 
     getShowCurrentPageTemplates(parameters: any) : Template[] {
         let ret: Template[] = [];
-        ret.push({ id: "wizardTitle", content: this.title});
-        ret.push({ id: "wizardDescription", content: this.description});
-        ret.push({ id: "pageTitle", content: this.getCurrentPageName()});
-        ret.push({ id: "pageDescription", content: this.getCurrentPageDescription()});
+        if( this.definition.hideWizardHeader === true ) {
+            ret.push({ id: "wizardHeader", content: ""});
+        } else {
+            ret.push({ id: "wizardHeader", content: this.getDefaultWizardHeader()});
+            ret.push({ id: "wizardTitle", content: this.title});
+            ret.push({ id: "wizardDescription", content: this.description === undefined ? "" : this.description});
+            if( this.imageString !== undefined ) {
+                ret.push({id: "wizardBanner", content: this.imageString})
+            }
+        }
+
+        if( this.getCurrentPage() !== null ) {
+            let pageDef : WizardPageDefinition | undefined = this.getCurrentPage()?.getPageDefinition();
+            if( pageDef?.hideWizardPageHeader === true ) {
+                ret.push({ id: "wizardPageHeader", content: "&nbsp;"});
+            } else {
+                ret.push({ id: "wizardPageHeader", content: this.getDefaultWizardPageHeader()});
+                ret.push({ id: "pageTitle", content: this.getCurrentPageName()});
+                ret.push({ id: "pageDescription", content: this.getCurrentPageDescription() === undefined ? "" : this.getCurrentPageDescription()});
+            }
+        }
+
         ret.push({ id: "content", content: this.getCurrentPageContent(parameters)});
         ret.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, true)});
-        if( this.imageString !== undefined ) {
-            ret.push({id: "wizardBanner", content: this.imageString})
-        }
         return ret;
     }
 
+    getDefaultWizardHeader() : string {
+        return '<div id="wizardBanner"></div>\n' + 
+                '<h2 id="wizardTitle" class="section__title section__title--primary"></h2>\n' + 
+                '<p id="wizardDescription" class="blurb ml-0 mr-0"></p>\n';
+    }
+    getDefaultWizardPageHeader(): string {
+        return '<h2 id="pageTitle" class="section__title section__title--primary"></h2>\n' + 
+                '<p id="pageDescription" class="blurb ml-0 mr-0"></p>\n' + 
+                '<hr />\n';
+    }
     generateValidationTemplates(parameters:any) : Template[] {
         return this.getCurrentPage() !== null ? this.getCurrentPage()!.getValidationTemplates(parameters) : [];
     }
-    getCurrentPageName(): string {
+    getCurrentPageName(): string | undefined {
         return (this.currentPage === null ? "" : this.currentPage.getName()); 
     }
     getCurrentPageId(): string {
         return (this.currentPage === null ? "" : this.currentPage.getId()); 
     }
 
-    getCurrentPageDescription(): string {
+    getCurrentPageDescription(): string | undefined {
         return (this.currentPage === null ? "" : this.currentPage.getDescription()); 
     }
 
@@ -281,8 +306,9 @@ export interface ValidatorResponse {
 
 export interface WizardDefinition {
     title: string;
-    description: string;
+    description?: string;
     bannerIconString?: string;
+    hideWizardHeader?: boolean;
     pages: WizardPageDefinition[];
     workflowManager?: IWizardWorkflowManager;
     renderer?: IWizardPageRenderer;
@@ -291,8 +317,9 @@ export interface WizardDefinition {
 
 export interface WizardPageDefinition {
     id: string;
-    title: string;
-    description: string;
+    title?: string;
+    description?: string;
+    hideWizardPageHeader?: boolean;
     fields: (WizardPageFieldDefinition | WizardPageSectionDefinition)[];
     validator?: WizardPageValidator;
   }

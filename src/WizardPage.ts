@@ -2,12 +2,12 @@ import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 export class WizardPage implements IWizardPage {
     id: string;
-    name: string;
-    description: string;
+    name: string | undefined;
+    description: string | undefined;
     isPageCompleteVar: boolean;
     wizard: IWizard | null;
     previousPage: IWizardPage | null;
-    constructor(pageId: string, pageName: string, description: string) {
+    constructor(pageId: string, pageName: string | undefined, description: string | undefined) {
         this.id = pageId;
         this.name = pageName;
         this.description = description;
@@ -21,7 +21,7 @@ export class WizardPage implements IWizardPage {
     getId(): string {
         return this.id;
     }
-    getName(): string {
+    getName(): string | undefined {
         return this.name;
     }
     getNextPage(): IWizardPage | null {
@@ -36,7 +36,7 @@ export class WizardPage implements IWizardPage {
     getWizard(): IWizard | null {
         return this.wizard;
     }
-    getDescription(): string {
+    getDescription(): string | undefined {
         return this.description;
     }
     isPageComplete(): boolean {
