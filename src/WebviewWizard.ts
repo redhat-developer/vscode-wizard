@@ -280,12 +280,28 @@ export class WebviewWizard extends Wizard implements IWizard {
         let hasNext = (this.currentPage !== null && this.currentPage.isPageComplete() && 
                         this.getActualNextPage(parameters) !== null);
         let canFinishNow = this.canFinishInternal(parameters);
-        const ret: string = 
-            this.createButton("buttonBack", "backPressed()", hasPrevious, "Back") + 
-            this.createButton("buttonNext", "nextPressed()", hasNext, "Next") + 
-            this.createButton("buttonFinish", "finishPressed()", canFinishNow, "Finish");
+
+        let ret: string = "";
+        if( this.definition.buttons) {
+            for( let button of this.definition.buttons) {
+                if( button.id == BUTTONS.PREVIOUS ) {
+                    ret = ret + this.createButton("buttonBack", "backPressed()", hasPrevious, button.label);
+                }
+                if( button.id == BUTTONS.NEXT ) {
+                    ret = ret + this.createButton("buttonNext", "nextPressed()", hasNext, button.label) 
+                }
+                if( button.id == BUTTONS.FINISH ) {
+                    ret = ret + this.createButton("buttonFinish", "finishPressed()", canFinishNow, button.label);
+                }
+            }
+        } else {
+            ret = this.createButton("buttonBack", "backPressed()", hasPrevious, "Back") + 
+                this.createButton("buttonNext", "nextPressed()", hasNext, "Next") + 
+                this.createButton("buttonFinish", "finishPressed()", canFinishNow, "Finish");
+        }
         return ret;
     }
+
     createButton(id: string, onclick: string, enabled: boolean, text: string): string {
         return "<button type=\"button\" class=\"btn btn-secondary button--big\" id=\"" + id + 
         "\" onclick=\"" + onclick + "\" " + (enabled ? "" : " disabled") + ">" + text + "</button>\n";
@@ -303,6 +319,20 @@ export enum SEVERITY {
     WARN = 3,
     ERROR = 4
 }
+
+
+export enum BUTTONS {
+    PREVIOUS = 1,
+    NEXT = 2,
+    FINISH = 3,
+}
+
+export interface ButtonItem {
+    id: BUTTONS,
+    label: string
+}
+
+
 export interface ValidatorResponseItem {
     template: Template;
     severity: SEVERITY
@@ -318,6 +348,7 @@ export interface WizardDefinition {
     pages: WizardPageDefinition[];
     workflowManager?: IWizardWorkflowManager;
     renderer?: IWizardPageRenderer;
+    buttons?: ButtonItem[]
   }
   
 
