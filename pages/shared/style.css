@@ -179,10 +179,10 @@ select {
   .select-container::after {
     content: '\eab4';
     font-family: codicon;
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-    line-height: 14px;
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+    line-height: 13px;
     position: absolute;
     top: 0;
     bottom: 0;
@@ -413,7 +413,7 @@ header {
   .command--show-view:after {
     content: '\eb14';
     font-family: codicon;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 400;
     position: relative;
     top: 3px;
