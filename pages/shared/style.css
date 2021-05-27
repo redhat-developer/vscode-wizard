@@ -99,6 +99,7 @@ input[type='checkbox'][disabled] {
 
 input[type='number'],
 input[type='text'],
+input[type='password'],
 input:not([type]),
 textarea {
     background: none;
@@ -111,6 +112,7 @@ textarea {
 
 .vscode-dark input[type='number'],
 .vscode-dark input[type='text'],
+.vscode-dark input[type='password'],
 .vscode-dark input:not([type]),
 .vscode-dark textarea {
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -118,6 +120,7 @@ textarea {
 
 .vscode-light input[type='number'],
 .vscode-light input[type='text'],
+.vscode-light input[type='password'],
 .vscode-light input:not([type]),
 .vscode-light textarea {
     border: 1px solid rgba(0, 0, 0, 0.3);
@@ -125,6 +128,7 @@ textarea {
 
 input[type='number']:focus,
 input[type='text']:focus,
+input[type='password']:focus,
 input:not([type]):focus,
 textarea:focus {
     outline-color: var(--color-focus-border);
@@ -132,6 +136,7 @@ textarea:focus {
 
 .vscode-light input[type='number']:focus,
 .vscode-light input[type='text']:focus,
+.vscode-light input[type='password']:focus,
 .vscode-light input:not([type]):focus,
 .vscode-light textarea:focus {
     background-color: rgba(255, 255, 255, 0.4);
@@ -139,6 +144,7 @@ textarea:focus {
 
 .vscode-dark input[type='number']:focus,
 .vscode-dark input[type='text']:focus,
+.vscode-dark input[type='password']:focus,
 .vscode-dark input:not([type]):focus,
 .vscode-dark textarea:focus {
     background-color: rgba(0, 0, 0, 0.2);
@@ -146,6 +152,7 @@ textarea:focus {
 
 input[type='number'][disabled],
 input[type='text'][disabled],
+input[type='password'][disabled],
 input:not([type])[disabled],
 textarea[disabled] {
     color: var(--color-foreground--75);
@@ -154,12 +161,14 @@ textarea[disabled] {
 
 input[type='number']::placeholder,
 input[type='text']::placeholder,
+input[type='password']::placeholder,
 input:not([type])::placeholder,
 textarea::placeholder {
     color: var(--vscode-input-placeholderForeground);
 }
 
 input[type='number'] {
+    display: block;
     max-width: 100px;
 }
 
@@ -1006,6 +1015,8 @@ section h2 {
 }
 
 .setting__input input[type='text'],
+.setting__input input[type='password'],
+.setting__input input[type='number'],
 .setting__input input:not([type]) {
     min-width: 245px;
 }
