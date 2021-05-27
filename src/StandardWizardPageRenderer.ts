@@ -113,7 +113,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
 
     checkBoxAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
         let iv = this.getInitialValue(oneField, data);
-        let lbl = this.labelFor(oneField.id, oneField.label,0);
+        let lbl = this.labelForNoStyle(oneField.id, oneField.label,0);
         let validationDiv =  this.validationDiv(oneField.id, 0);
 
         // create the input item
@@ -180,7 +180,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                                         (selected ? " checked" : "") +
                                         disabled + 
                                         ">\n";
-                inputs += this.labelFor(oneOpt, oneOpt,0);
+                inputs += this.labelForNoStyle(oneOpt, oneOpt,0);
             }
         }
 
@@ -269,6 +269,10 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
         return  tabss + "<div id=\"" + id + "Validation\">&nbsp;</div>\n";
     }
     labelFor(fieldId:string, labelVal:string, tabs:number): string {
+        let tabss:string = this.numTabs(tabs);
+        return tabss + "<label for=\"" + fieldId + "\" style=\"text-align:left;width:150px;\">" + labelVal + "</label>\n";
+    }
+    labelForNoStyle(fieldId:string, labelVal:string, tabs:number): string {
         let tabss:string = this.numTabs(tabs);
         return tabss + "<label for=\"" + fieldId + "\">" + labelVal + "</label>\n";
     }
