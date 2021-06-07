@@ -19,18 +19,8 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
     }
 
     getValidationTemplates(parameters:any) : Template[] {
-        let templates : Template[] = [];
-        for (let key of this.pageDefinition.fields) {
-            if( isWizardPageSectionDefinition(key)) {
-                for (let key2 of key.childFields) {
-                    templates.push({ id: key2.id + "Validation", content: "&nbsp;"});
-                }
-            } else if( isWizardPageFieldDefinition(key)) {
-                templates.push({ id: key.id + "Validation", content: "&nbsp;"});
-            }
-        }
         this.setPageComplete(true);
-        return this.validate(parameters, templates);
+        return this.validate(parameters);
     }
 
     severityToImage(sev: SEVERITY): string {
@@ -42,7 +32,8 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
             return"<i class=\"icon icon__info\"></i>";
         return "";
     }
-    validate(parameters: any, templates:Template[]): Template[] {
+    validate(parameters: any): Template[] {
+        let templates: Template[] = [];
         if( this.pageDefinition.validator ) {
             let resp: ValidatorResponse = this.pageDefinition.validator.call(null, parameters);
             for( let oneItem of resp.items ) {
@@ -58,7 +49,33 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
                 templates = templates.concat(oneItem.template);
             }
         }
+
+        // All the official ones were added. 
+        // Now lets add the empty ones
+        for (let key of this.pageDefinition.fields) {
+            if( isWizardPageSectionDefinition(key)) {
+                for (let key2 of key.childFields) {
+                    if( !this.containsTemplate(key2.id, templates)) {
+                        templates.push({ id: key2.id + "Validation", content: "&nbsp;"});
+                    }
+                }
+            } else if( isWizardPageFieldDefinition(key)) {
+                if( !this.containsTemplate(key.id, templates)) {
+                    templates.push({ id: key.id + "Validation", content: "&nbsp;"});
+                }
+            }
+        }
+
         return templates;
+    }
+
+    containsTemplate(id: string, templates: Template[]): boolean {
+        for( let template of templates) {
+            if( template.id === id || template.id === (id + 'Validation')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     getRenderer(): IWizardPageRenderer {

@@ -266,11 +266,11 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     }
     validationDiv(id:string, tabs:number):string {
         let tabss:string = this.numTabs(tabs);
-        return  tabss + "<div id=\"" + id + "Validation\">&nbsp;</div>\n";
+        return  tabss + "<div style=\"display:block;text-align:left;width:180px;\" id=\"" + id + "Validation\">&nbsp;</div>\n";
     }
     labelFor(fieldId:string, labelVal:string, tabs:number): string {
         let tabss:string = this.numTabs(tabs);
-        return tabss + "<label for=\"" + fieldId + "\" style=\"display:block;text-align:left;width:150px;\">" + labelVal + "</label>\n";
+        return tabss + "<label for=\"" + fieldId + "\" style=\"display:block;text-align:left;width:125px;\">" + labelVal + "</label>\n";
     }
     labelForNoStyle(fieldId:string, labelVal:string, tabs:number): string {
         let tabss:string = this.numTabs(tabs);

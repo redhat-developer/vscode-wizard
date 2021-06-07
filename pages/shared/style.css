@@ -1019,8 +1019,8 @@ section h2 {
 .setting__input input[type='number'],
 .setting__input input:not([type]),
 .setting__input textarea {
-    min-width: 245px;
-    max-width: 300px;
+    min-width: 240px;
+    max-width: 240px;
 }
 
 .setting__input label {

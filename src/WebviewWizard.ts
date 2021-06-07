@@ -265,7 +265,7 @@ export class WebviewWizard extends Wizard implements IWizard {
         for( let d of this.definition.pages) {
             let page: WebviewWizardPage = new WebviewWizardPage(d, this.definition);
             page.setWizard(this);
-            page.validate({}, []);
+            page.validate({});
             this.addPage(page);
         }
     }
