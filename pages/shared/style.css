@@ -186,6 +186,14 @@ label {
     cursor: pointer;
 }
 
+.vscode-light label {
+    color: #006ab1;
+}
+
+.vscode-dark label {
+    color: #3794ff;
+}
+
 select {
     background: none;
     color: var(--color-foreground);
@@ -596,7 +604,7 @@ header {
 
 .content__area {
     grid-area: content;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
 }
 
 .vscode-dark .content__area {
@@ -822,6 +830,17 @@ section h2 {
 .section__collapsible {
     display: flex;
     flex-wrap: wrap;
+    padding-top: 10px;
+    padding-left: 10px;
+    width: 100%;    
+}
+
+.vscode-dark .section__collapsible {
+    background-color: var(--color-background--lighten-05);
+}
+
+.vscode-light .section__collapsible {
+    background-color: var(--color-background);
 }
 
 .section__content {
@@ -999,7 +1018,6 @@ section h2 {
     flex-wrap: nowrap;
     align-items: baseline;
     line-height: normal;
-    margin: 0.5em 0;
 }
 
 .setting__input input,
