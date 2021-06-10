@@ -57,6 +57,8 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
             ret = ret + this.selectAsHTML(oneField, data);
         } else if( oneField.type === "combo") {
             ret = ret + this.comboAsHTML(oneField, data);
+        } else if( oneField.type === "password") {
+          ret = ret + this.passwordAsHTML(oneField, data);
         }
         return this.divClass("setting", 0, ret);
     }
@@ -257,6 +259,31 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
         return settingInput + hint;
     }
 
+
+    passwordAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
+      let iv = this.getInitialValue(oneField, data);
+
+      let lbl = this.labelFor(oneField.id, oneField.label,0);
+      let initialValueSegment = oneField.initialValue ? " value=\"" + oneField.initialValue + "\"" : "";
+      let placeholderSegment = !oneField.initialValue && oneField.placeholder ? " placeholder=\"" + oneField.placeholder + "\"" : "";
+      let disabled = (!this.isFieldEnabled(oneField, data) ? " disabled" : "");
+
+
+      let input = "<input id=\"" + oneField.id + "\" name=\"" + oneField.id + "\" type=\"password\""
+              + (iv ? "value=\"" + iv + "\"" : "")
+              + initialValueSegment + placeholderSegment + this.onInputFieldChanged(oneField.id) +
+              disabled + " data-setting data-setting-preview>";
+      let validationDiv =  this.validationDiv(oneField.id, 0);
+
+      let inner = lbl + input + validationDiv;
+      let settingInput:string = this.divClass("setting__input",0, inner);
+
+      let hint = "<p class=\"setting__hint\">" +
+              (oneField.description ? oneField.description : "")
+              + "</p>";
+
+      return settingInput + hint;
+  }
 
     onInputFieldChanged(id:string):string {
         return  " oninput=\"fieldChanged('" + id + "')\" ";
