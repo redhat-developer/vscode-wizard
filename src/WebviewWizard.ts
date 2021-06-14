@@ -7,6 +7,7 @@ import { createOrShowWizard, disposeWizard, sendInitialData, updatePanelTitle} f
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager, PerformFinishResponse } from './IWizardWorkflowManager';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
+import { templates } from 'handlebars';
 
 export class WebviewWizard extends Wizard implements IWizard {
     context:  vscode.ExtensionContext;
@@ -154,9 +155,10 @@ export class WebviewWizard extends Wizard implements IWizard {
                 this.close();
             }
             for( let oneTemplate of resp.templates ) {
-                if( oneTemplate.id === 'vscode-wizard/updateWizardTitle' && oneTemplate.content !== undefined) {
+                if( oneTemplate.id === UPDATE_TITLE && oneTemplate.content !== undefined) {
                     this.title = oneTemplate.content;
                     updatePanelTitle(this.id, this.title);
+                    templates.push({id: 'wizardTitle', content: this.title});
                 }
             }
             return {
@@ -318,6 +320,8 @@ export class WebviewWizard extends Wizard implements IWizard {
 
 export type WizardPageValidator = (parameters?: any) => ValidatorResponse;
 export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
+
+export const UPDATE_TITLE: string = "vscode-wizard/updateWizardTitle";
 
 export enum SEVERITY {
     OTHER = 1,
