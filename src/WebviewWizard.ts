@@ -3,7 +3,7 @@ import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 import * as vscode from 'vscode';
 import { MesssageMapping, Template, HandlerResponse } from "./pageImpl";
-import { createOrShowWizard, disposeWizard, sendInitialData} from "./pageImpl";
+import { createOrShowWizard, disposeWizard, sendInitialData, updatePanelTitle} from "./pageImpl";
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager, PerformFinishResponse } from './IWizardWorkflowManager';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
@@ -152,6 +152,12 @@ export class WebviewWizard extends Wizard implements IWizard {
         } else {
             if( resp.close ) {
                 this.close();
+            }
+            for( let oneTemplate of resp.templates ) {
+                if( oneTemplate.id === 'vscode-wizard/updateWizardTitle' && oneTemplate.content !== undefined) {
+                    this.title = oneTemplate.content;
+                    updatePanelTitle(this.id, this.title);
+                }
             }
             return {
                 returnObject: resp.returnObject,

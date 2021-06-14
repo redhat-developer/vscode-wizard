@@ -72,10 +72,10 @@ export function sendInitialData(wizardName: string, data: Map<string,string>) {
     panel.webview.postMessage(response);
   }
 }
-export function disposeWizard(name: string) {
-  let panel = currentPanels.get(name);
+export function disposeWizard(id: string) {
+  let panel = currentPanels.get(id);
   if (panel) {
-    currentPanels.delete(name);
+    currentPanels.delete(id);
     panel.dispose();
   }
 }
@@ -90,7 +90,7 @@ export function asVSCodeResource(resource:string) : vscode.Uri {
 
 
 export function createOrShowWizard(
-  name: string,
+  id: string,
   viewType: string,
   title: string,
   context: vscode.ExtensionContext,
@@ -99,11 +99,20 @@ export function createOrShowWizard(
   const pages: string = path.join(__dirname, "../", "pages").normalize();
   const html: string = path.join(pages, "stub.html");
 
-  createOrShowWizardWithPaths(name, viewType, title, context, messageMappings, pages, html);
+  createOrShowWizardWithPaths(id, viewType, title, context, messageMappings, pages, html);
 }
 
-export function createOrShowWizardWithPaths(
+export function updatePanelTitle(
   name: string,
+  title: string
+) {
+  let panel = currentPanels.get(name);
+  if (panel) {
+    panel.title = title;
+  }
+}
+export function createOrShowWizardWithPaths(
+  id: string,
   viewType: string,
   title: string,
   context: vscode.ExtensionContext,
@@ -111,7 +120,7 @@ export function createOrShowWizardWithPaths(
   rootPath: string,
   pagePath: string
 ) {
-  let panel = currentPanels.get(name);
+  let panel = currentPanels.get(id);
   if (panel) {
     panel.reveal();
   } else {
@@ -132,14 +141,14 @@ export function createOrShowWizardWithPaths(
       .replace('"{{init}}"', initJS);
     panel.webview.html = contents;
     panel.webview.onDidReceiveMessage(
-      createDispatch(messageMappings, name, rootPath)
+      createDispatch(messageMappings, id, rootPath)
     );
     panel.onDidDispose(
-      () => currentPanels.delete(name),
+      () => currentPanels.delete(id),
       undefined,
       context.subscriptions
     );
-    currentPanels.set(name, panel);
+    currentPanels.set(id, panel);
   }
 }
 
