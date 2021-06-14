@@ -154,16 +154,19 @@ export class WebviewWizard extends Wizard implements IWizard {
             if( resp.close ) {
                 this.close();
             }
+            let templatesToReturn = [];
             for( let oneTemplate of resp.templates ) {
                 if( oneTemplate.id === UPDATE_TITLE && oneTemplate.content !== undefined) {
                     this.title = oneTemplate.content;
                     updatePanelTitle(this.id, this.title);
-                    templates.push({id: 'wizardTitle', content: this.title});
+                    templatesToReturn.push({id: 'wizardTitle', content: this.title});
+                } else {
+                    templatesToReturn.push(oneTemplate);
                 }
             }
             return {
                 returnObject: resp.returnObject,
-                templates: resp.templates
+                templates: templatesToReturn
             };
         }
     }
