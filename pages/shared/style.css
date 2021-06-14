@@ -1036,6 +1036,7 @@ section h2 {
 .setting__input input[type='password'],
 .setting__input input[type='number'],
 .setting__input input:not([type]),
+.setting__input select,
 .setting__input textarea {
     min-width: 240px;
     max-width: 240px;
