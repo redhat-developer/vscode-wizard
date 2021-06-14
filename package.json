@@ -1,6 +1,6 @@
 {
   "name": "@redhat-developer/vscode-wizard",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Provides Wizard APIs for use in VSCode",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
