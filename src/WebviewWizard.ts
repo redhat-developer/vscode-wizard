@@ -192,7 +192,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     getShowCurrentPageTemplates(parameters: any) : Template[] {
         let ret: Template[] = [];
         if( this.definition.hideWizardHeader === true ) {
-            ret.push({ id: "wizardHeader", content: ""});
+            ret.push({ id: "wizardHeader", content: "&nbsp;"});
         } else {
             ret.push({ id: "wizardHeader", content: this.getDefaultWizardHeader()});
             ret.push({ id: "wizardTitle", content: this.title});
