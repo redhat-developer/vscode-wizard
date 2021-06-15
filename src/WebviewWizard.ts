@@ -25,6 +25,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     description: string | undefined;
     definition: WizardDefinition;
     initialData: Map<string, string>;
+    isDirty: boolean = false;
 
     constructor(id: string, type: string, context2:  vscode.ExtensionContext,
         definition: WizardDefinition, initialData: Map<string, string>) {
@@ -74,6 +75,11 @@ export class WebviewWizard extends Wizard implements IWizard {
         this.validateMapping = {
             command: "validate",
             handler: async (parameters:any) => {
+                if( !this.isDirty ) {
+                    this.isDirty = true;
+                    this.updateWizardPanelTitle(this.id, this.title, this.isDirty);
+                }
+
                 const validations = this.generateValidationTemplates(parameters);
                 validations.push(
                     { id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false)});
@@ -154,16 +160,21 @@ export class WebviewWizard extends Wizard implements IWizard {
             if( resp.close ) {
                 this.close();
             }
+            if( resp.success ) {
+                this.isDirty = false;
+            }
             let templatesToReturn = [];
             for( let oneTemplate of resp.templates ) {
                 if( oneTemplate.id === UPDATE_TITLE && oneTemplate.content !== undefined) {
-                    this.title = oneTemplate.content;
-                    updatePanelTitle(this.id, this.title);
                     templatesToReturn.push({id: 'wizardTitle', content: this.title});
                 } else {
                     templatesToReturn.push(oneTemplate);
                 }
             }
+
+            // Handle title changes
+            this.updateWizardPanelTitle(this.id, this.title, this.isDirty);
+
             return {
                 returnObject: resp.returnObject,
                 templates: templatesToReturn
@@ -171,6 +182,9 @@ export class WebviewWizard extends Wizard implements IWizard {
         }
     }
 
+    updateWizardPanelTitle(id: string, title: string, dirty: boolean) {
+        updatePanelTitle(this.id, this.title + (dirty ? " ●" : ""));
+    }
     close(): void {
         disposeWizard(this.id);
     }
@@ -317,6 +331,11 @@ export class WebviewWizard extends Wizard implements IWizard {
         return "<button type=\"button\" class=\"btn btn-secondary button--big\" id=\"" + id + 
         "\" onclick=\"" + onclick + "\" " + (enabled ? "" : " disabled") + ">" + text + "</button>\n";
     }
+
+
+    showDirtyState(def: WizardDefinition) : boolean {
+        return def.showDirtyState !== undefined && def.showDirtyState && this.isDirty;
+    }
 }
 
 
@@ -361,7 +380,8 @@ export interface WizardDefinition {
     pages: WizardPageDefinition[];
     workflowManager?: IWizardWorkflowManager;
     renderer?: IWizardPageRenderer;
-    buttons?: ButtonItem[]
+    buttons?: ButtonItem[],
+    showDirtyState?: boolean
   }
   
 

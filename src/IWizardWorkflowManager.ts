@@ -12,6 +12,7 @@ export interface IWizardWorkflowManager {
 
 export interface PerformFinishResponse {
     close: boolean;
+    success: boolean;
     returnObject: any;
     templates: Template[];
 }
