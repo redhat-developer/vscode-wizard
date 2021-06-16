@@ -153,33 +153,25 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     return this.wrapHTMLField(field, htmlInput, true, true);
   }
 
-  textAreaAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
-    let cols = (oneField.properties && oneField.properties.columns ? " cols=\"" + oneField.properties.columns + "\"" : "");
-    let rows = (oneField.properties && oneField.properties.rows ? " rows=\"" + oneField.properties.rows + "\"" : "");
-    let iv = this.getInitialValue(oneField, data);
-    let lbl = this.labelFor(oneField.id, oneField.label);
-    let disabled = (!this.isFieldEnabled(oneField, data) ? " disabled" : "");
+  textAreaAsHTML(field: WizardPageFieldDefinition, data: any): string {
+    const id = field.id;
+    const value = this.getInitialValue(field, data);
+    const disabled = !this.isFieldEnabled(field, data);
+    const placeholder = this.getFieldPlaceHolder(field);
+    const cols = field.properties?.columns;
+    const rows = field.properties?.rows;
 
+    const htmlTextarea =
+      `<textarea id="${id}"
+                 name="${id}"
+                 ${cols ? `cols="${cols}"` : ""}
+                 ${rows ? `rows="${rows}"` : ""}
+                 ${disabled ? "disabled" : ""}
+                 ${placeholder ? `placeholder="${placeholder}"` : ""}
+                 oninput="fieldChanged('${id}')"
+                 data-setting data-setting-preview >${value || ""}</textarea>`;
 
-
-    let placeholder = (!oneField.initialValue && oneField.placeholder ?
-      " placeholder=\"" + oneField.placeholder + "\"" : "");
-
-
-    let oninput = this.onInputFieldChanged(oneField.id);
-    let textarea = "<textarea id=\"" + oneField.id + "\" name=\"" + oneField.id + "\" "
-      + cols + rows + oninput + placeholder + disabled + " data-setting data-setting-preview>";
-    if (iv) {
-      textarea += iv;
-    }
-    textarea = textarea + "</textarea>\n";
-    let validationDiv = this.validationDiv(oneField.id, 0);
-
-    let inner = lbl + textarea + validationDiv;
-    let settingInput: string = this.divClass("setting__input", 0, inner);
-
-    let hint = "<p class=\"setting__hint\">" + (oneField.description ? oneField.description : "") + "</p>";
-    return settingInput + hint;
+    return this.wrapHTMLField(field, htmlTextarea);
   }
 
   radioGroupAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
@@ -323,7 +315,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     return !field.initialValue && field.placeholder ? field.placeholder : undefined;
   }
 
-  wrapHTMLField(oneField: WizardPageFieldDefinition, fieldContent: string, labelAfterField = false, labelForNoStyle = false) : string {
+  wrapHTMLField(oneField: WizardPageFieldDefinition, fieldContent: string, labelAfterField = false, labelForNoStyle = false): string {
     // Generate label
     const label = labelForNoStyle ? this.labelForNoStyle(oneField.id, oneField.label) : this.labelFor(oneField.id, oneField.label);
 
