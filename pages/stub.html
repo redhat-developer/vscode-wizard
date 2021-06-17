@@ -63,7 +63,7 @@
     const vscode = acquireVsCodeApi();
     let wizardMap = new Map();
     init();
-    
+
     function init() {
       vscode.postMessage({
         command: "ready"
@@ -71,14 +71,10 @@
       initializeAndWatchThemeColors();
     }
 
-    function fieldChanged(fieldId) {
-      var val = document.getElementById(fieldId).value;
-      fieldChangedWithVal(fieldId, val);
-    }
-
-    function fieldChangedWithVal(fieldId, val) {
-      console.log("field changed: setting " + fieldId + " to " + val);
-      wizardMap.set(fieldId, val);
+    function fieldChanged(elt, val) {
+      const value = val !== undefined ? val : elt.value;
+      // console.log("field changed: setting " + fieldId + " to " + val);
+      wizardMap.set(elt.id, value);
       postCommandWithMap("validate");
     }
 

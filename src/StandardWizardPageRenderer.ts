@@ -48,7 +48,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
 
   oneFieldAsString(field: WizardPageFieldDefinition, data: any): string {
     const htmlField = this.createHTMLField(field, data);
-    return this.divClass("setting", 0, htmlField);
+    return this.divClass("setting", htmlField);
   }
 
   createHTMLField(field: WizardPageFieldDefinition, data: any): string {
@@ -84,11 +84,11 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const htmlInput =
       `<input id="${id}"
               name="${id}"
+              type="text"
               ${value ? `value="${value}"` : ""}
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
-              oninput="fieldChanged('${id}')"
-              type="text"
+              oninput="fieldChanged(this)"
               data-setting data-setting-preview >`;
 
     return this.wrapHTMLField(field, htmlInput);
@@ -103,11 +103,11 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const htmlInput =
       `<input id="${id}"
               name="${id}"
+              type="number"
               ${value ? `value="${value}"` : ""}
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
-              oninput="fieldChanged('${id}')"
-              type="number"
+              oninput="fieldChanged(this)"
               data-setting data-setting-preview >`;
 
     return this.wrapHTMLField(field, htmlInput);
@@ -122,11 +122,11 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const htmlInput =
       `<input id="${id}"
               name="${id}"
+              type="password"
               ${value ? `value="${value}"` : ""}
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
-              oninput="fieldChanged('${id}')"
-              type="password"
+              oninput="fieldChanged(this)"
               data-setting data-setting-preview >`;
 
     return this.wrapHTMLField(field, htmlInput);
@@ -142,11 +142,11 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const htmlInput =
       `<input id="${id}"
               name="${id}"
+              type="checkbox"
               ${value ? `value="${value}"` : ""}
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
-              ${this.onInputFieldChangedWithValue(id, 'this.checked')}
-              type="checkbox"
+              oninput="fieldChanged(this, this.checked)"
               ${checked ? "checked" : ""}
               data-setting data-setting-preview >`;
 
@@ -168,47 +168,42 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                  ${rows ? `rows="${rows}"` : ""}
                  ${disabled ? "disabled" : ""}
                  ${placeholder ? `placeholder="${placeholder}"` : ""}
-                 oninput="fieldChanged('${id}')"
+                 oninput="fieldChanged(this)"
                  data-setting data-setting-preview >${value || ""}</textarea>`;
 
     return this.wrapHTMLField(field, htmlTextarea);
   }
 
-  radioGroupAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
-    let iv = this.getInitialValue(oneField, data);
-    let label = this.labelFor(oneField.id, oneField.label);
-    let disabled = (!this.isFieldEnabled(oneField, data) ? " disabled" : "");
+  radioGroupAsHTML(field: WizardPageFieldDefinition, data: any): string {
+    const id = field.id;
+    const value = this.getInitialValue(field, data);
+    const disabled = !this.isFieldEnabled(field, data);
+    const options = this.getFieldOptions(field, data);
 
-    let inputs = "";
-    if (oneField.properties && oneField.properties?.options) {
-      for (let oneOpt of oneField.properties?.options) {
-        let selected: boolean = iv ? (iv === oneOpt) : false;
-        let oninput = this.onInputFieldChangedWithValue(oneField.id, "'" + oneOpt + "'");
-        inputs = inputs + "<input type=\"radio\" name=\"" + oneField.id +
-          "\" id=\"" + oneOpt +
-          oninput +
-          (selected ? " checked" : "") +
-          disabled +
-          ">\n";
-        inputs += this.labelForNoStyle(oneOpt, oneOpt);
-      }
-    }
+    const renderer = this;
+    const htmlInputs = options?.map(
+      function (option: any) {
+        const checked: boolean = value ? (value === option) : false;
+        return `<input id="${option}"
+                       name="${id}"
+                       type="radio"
+                       ${disabled ? "disabled" : ""}
+                       oninput="fieldChanged(this, '${option}')"
+                       ${checked ? "checked" : ""}>
+                       ${renderer.labelForNoStyle(option, option)} >`;
+      }).join("");
 
-    let inputContainer = this.divClass("select-container", 0, inputs);
-
-    let validationDiv = this.validationDiv(oneField.id, 0);
-    let settingInput: string = this.divClass("setting__input", 0, label + inputContainer + validationDiv);
-    let hint = "<p class=\"setting__hint\">" + (oneField.description ? oneField.description : "") + "</p>";
-    return settingInput + hint;
+    const htmlInputsContainer = this.divClass("select-container", htmlInputs);
+    return this.wrapHTMLField(field, htmlInputsContainer);
   }
-
 
   selectAsHTML(field: WizardPageFieldDefinition, data: any): string {
     const id = field.id;
     const value = this.getInitialValue(field, data);
     const disabled = !this.isFieldEnabled(field, data);
 
-    const htmlOptions = field.properties?.options?.map(
+    const options = this.getFieldOptions(field, data);
+    const htmlOptions = options?.map(
       function (option: any) {
         const selected: boolean = value ? (value === option) : false;
         return `<option${selected ? " selected" : ""}>${option}</option>`;
@@ -218,65 +213,51 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
       `<select id="${id}"
                name="${id}"
                ${disabled ? "disabled" : ""}
-               oninput="fieldChanged('${id}')"
+               oninput="fieldChanged(this)"
                data-setting >
                ${htmlOptions}
        </select>`;
 
-    const selectContainer = this.divClass("select-container", 0, htmlSelect);
+    const selectContainer = this.divClass("select-container", htmlSelect);
     return this.wrapHTMLField(field, selectContainer);
   }
 
-  comboAsHTML(oneField: WizardPageFieldDefinition, data: any): string {
-    if (!oneField.optionProvider && (!oneField.properties || !oneField.properties.options)) {
-      return this.textBoxAsHTML(oneField, data);
+  comboAsHTML(field: WizardPageFieldDefinition, data: any): string {
+    if (!field.optionProvider && (!field.properties || !field.properties.options)) {
+      return this.textBoxAsHTML(field, data);
     }
 
-    let iv = this.getInitialValue(oneField, data);
-    let label: string = this.labelFor(oneField.id, oneField.label);
-    let oninput = this.onInputFieldChanged(oneField.id);
-    let disabled = (!this.isFieldEnabled(oneField, data) ? " disabled" : "");
+    const id = field.id;
+    const value = this.getInitialValue(field, data);
+    const disabled = !this.isFieldEnabled(field, data);
+    const placeholder = this.getFieldPlaceHolder(field);
 
-    // actual combo here
-    let text: string = "<input type=\"text\" name=\"" + oneField.id + "\" " +
-      "list=\"" + oneField.id + "InternalList\" " +
-      "id=\"" + oneField.id + "\"" +
-      (iv ? "value=\"" + iv + "\"" : "") +
-      disabled +
-      oninput + "/>\n";
-    let dataList: string = "<datalist id=\"" + oneField.id + "InternalList\">";
-    let optList = null;
-    if (oneField.optionProvider) {
-      optList = oneField.optionProvider(data);
-    }
-    if (optList === null && oneField.properties && oneField.properties.options) {
-      optList = oneField.properties?.options;
-    }
+    const options = this.getFieldOptions(field, data);
+    const htmlOptions = options?.map(
+      function (option: any) {
+        const selected: boolean = value ? (value === option) : false;
+        return `<option value="${option}"${selected ? " selected" : ""}>`;
+      }).join("");
 
-    for (let oneOpt of optList) {
-      let selected: boolean = iv ? (iv === oneOpt) : false;
-      dataList = dataList + "   <option value=\"" + oneOpt + "\"" + (selected ? " selected" : "") + ">\n";
-    }
-    dataList = dataList + "</datalist>\n";
+    const listId = `${id}InternalList`;
+    const htmlcombo =
+      `<input id="${id}"
+              name="${id}"
+              type="text"
+              list="${listId}"
+              ${value ? `value="${value}"` : ""}
+              ${disabled ? "disabled" : ""}
+              ${placeholder ? `placeholder="${placeholder}"` : ""}
+              oninput="fieldChanged(this)" >
+       <datalist id="${listId}">
+        ${htmlOptions}
+       </datalist>`;
 
-
-    let validationDiv = this.validationDiv(oneField.id, 0);
-    let settingInput: string = this.divClass("setting__input", 0, label + text + dataList + validationDiv);
-    let hint = "<p class=\"setting__hint\">" + (oneField.description ? oneField.description : "") + "</p>";
-    return settingInput + hint;
+    return this.wrapHTMLField(field, htmlcombo);
   }
 
-  onInputFieldChanged(id: string): string {
-    return ` oninput="fieldChanged('${id}')" `;
-  }
-
-  onInputFieldChangedWithValue(id: string, val: string): string {
-    return ` oninput="fieldChangedWithVal('${id}', ${val})"`;
-  }
-
-  validationDiv(id: string, tabs: number): string {
-    const tabss = this.numTabs(tabs);
-    return `${tabss}<div style="display:block;text-align:left;width:180px;" id="${id}Validation">&nbsp;</div>`;
+  validationDiv(id: string): string {
+    return `<div style="display:block;text-align:left;width:180px;" id="${id}Validation">&nbsp;</div>`;
   }
 
   labelFor(fieldId: string, labelVal: string): string {
@@ -287,17 +268,8 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     return `<label for="${fieldId}">${labelVal}</label>`;
   }
 
-  divClass(classname: string, tabs: number, inner: string): string {
-    const tabss = this.numTabs(tabs);
-    return `${tabss}<div class="${classname}">${inner}${tabss}</div>`;
-  }
-
-  numTabs(num: number): string {
-    let ret: string = "";
-    for (let i: number = 0; i < num; i++) {
-      ret += "\t";
-    }
-    return ret;
+  divClass(classname: string, inner: string): string {
+    return `<div class="${classname}">${inner}</div>`;
   }
 
   isFieldEnabled(oneField: WizardPageFieldDefinition, data: any): boolean {
@@ -315,17 +287,24 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     return !field.initialValue && field.placeholder ? field.placeholder : undefined;
   }
 
+  getFieldOptions(field: WizardPageFieldDefinition, data: any) {
+    if (field.optionProvider) {
+      return field.optionProvider(data);
+    }
+    return field.properties?.options;
+  }
+
   wrapHTMLField(oneField: WizardPageFieldDefinition, fieldContent: string, labelAfterField = false, labelForNoStyle = false): string {
     // Generate label
     const label = labelForNoStyle ? this.labelForNoStyle(oneField.id, oneField.label) : this.labelFor(oneField.id, oneField.label);
 
     // Generate validation result area
     const id = oneField.id;
-    const validationDiv = this.validationDiv(id, 0);
+    const validationDiv = this.validationDiv(id);
 
     // Generate the div class which embedds the label, input and validation result
     const inner = (labelAfterField ? fieldContent + label : label + fieldContent) + validationDiv;
-    const settingInput = this.divClass("setting__input", 0, inner);
+    const settingInput = this.divClass("setting__input", inner);
 
     // Generate the description hint area
     const description = oneField.description;
