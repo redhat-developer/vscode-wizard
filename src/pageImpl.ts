@@ -3,15 +3,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as handlebars from 'handlebars';
 
-
-
-
 export type MessageHandler = (parameters?: any) => Promise<HandlerResponse>;
+
 export interface Template {
   id: string;
   content?: string;
   contentUrl?: string;
 }
+
 export interface MesssageMapping {
   command: string;
   handler: MessageHandler;
@@ -25,11 +24,11 @@ export interface HandlerResponse {
   forward?: string;
 }
 
-
 interface Content {
   id: string;
   body: string;
 }
+
 interface CommandResponse {
   command: string;
   contents?: Content[];
@@ -38,28 +37,8 @@ interface CommandResponse {
 
 export const currentPanels: Map<string, vscode.WebviewPanel> = new Map();
 
-const initJS = `
-function initEventListener(fn) {
-  window.addEventListener('message', event => {
-    const message = event.data;
-    if (message.command.match(/Response$/) && message.contents) {
-      message.contents.forEach(content => {
-        let element = document.getElementById(content.id);
-        if( element === null ) 
-          console.log(content.id + " is null");
-        element.innerHTML = content.body;
-      });
-    } else {
-      if (fn) {
-        fn(message);
-      }
-    }
-  });
-}
-`;
-
 // data should be an object literal
-export function sendInitialData(wizardName: string, data: Map<string,string>) {
+export function sendInitialData(wizardName: string, data: Map<string, string>) {
   let panel = currentPanels.get(wizardName);
   if (panel) {
     const response: CommandResponse = {
@@ -72,6 +51,7 @@ export function sendInitialData(wizardName: string, data: Map<string,string>) {
     panel.webview.postMessage(response);
   }
 }
+
 export function disposeWizard(id: string) {
   let panel = currentPanels.get(id);
   if (panel) {
@@ -80,14 +60,13 @@ export function disposeWizard(id: string) {
   }
 }
 
-export function asVSCodeResource(resource:string) : vscode.Uri {
+export function asVSCodeResource(resource: string): vscode.Uri {
   return vscode.Uri.file(path.join(resource, '/')).with(
     {
       scheme: 'vscode-resource',
     }
   );
 }
-
 
 export function createOrShowWizard(
   id: string,
@@ -111,6 +90,7 @@ export function updatePanelTitle(
     panel.title = title;
   }
 }
+
 export function createOrShowWizardWithPaths(
   id: string,
   viewType: string,
@@ -135,10 +115,9 @@ export function createOrShowWizardWithPaths(
         localResourceRoots: [rootStringAsVSCodeUri],
       }
     );
-    const contents : string = fs
+    const contents: string = fs
       .readFileSync(pagePath, 'utf-8')
-      .replace('{{base}}', rootStringAsVSCodeUri.toString())
-      .replace('"{{init}}"', initJS);
+      .replace('{{base}}', rootStringAsVSCodeUri.toString());
     panel.webview.html = contents;
     panel.webview.onDidReceiveMessage(
       createDispatch(messageMappings, id, rootPath)
@@ -166,7 +145,7 @@ function createDispatch(
         command: `${message.command}Response`,
       };
       mapping.handler.call(null, message.parameters).then(result => {
-        if( !result ) {
+        if (!result) {
           return;
         }
         const templates: Template[] | undefined = (result.templates === null ? mapping.defaultTemplates : result.templates);
@@ -202,7 +181,7 @@ function createDispatch(
           response.result = result;
         }
         const panel: vscode.WebviewPanel | undefined = currentPanels.get(currentPanelName);
-        if( panel && panel !== undefined) {
+        if (panel && panel !== undefined) {
           panel.webview.postMessage(response);
         }
       });
