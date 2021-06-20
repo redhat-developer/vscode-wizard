@@ -1,12 +1,12 @@
 import { IWizardPage } from './IWizardPage';
 import { WizardPage } from './WizardPage';
-import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse, SEVERITY } from './WebviewWizard';
+import { WizardPageDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, ValidatorResponse, SEVERITY } from './WebviewWizard';
 import { Template } from './pageImpl';
 import { StandardWizardPageRenderer } from './StandardWizardPageRenderer';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
-import { WebviewWizard, WizardDefinition } from '.';
+import { WizardDefinition } from '.';
 export class WebviewWizardPage extends WizardPage implements IWizardPage {
-    pageDefinition:WizardPageDefinition; 
+    pageDefinition:WizardPageDefinition;
     wizardDefinition:WizardDefinition;
     constructor(pageDefinition: WizardPageDefinition, wizardDefinition: WizardDefinition) {
         super(pageDefinition.id, pageDefinition.title, pageDefinition.description);
@@ -50,7 +50,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
             }
         }
 
-        // All the official ones were added. 
+        // All the official ones were added.
         // Now lets add the empty ones
         for (let key of this.pageDefinition.fields) {
             if( isWizardPageSectionDefinition(key)) {
@@ -84,7 +84,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         }
         return new StandardWizardPageRenderer();
     }
-    
+
     getContentAsHTML(data: any): string {
         return this.getRenderer().getContentAsHTML(this.pageDefinition, data);
     }
