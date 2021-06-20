@@ -58,9 +58,11 @@ A webview definition's page consists of a title, a description, an array of fiel
 ```
 
 ### Page fields
-A field consists of an id, a label, a type, an initial value, and some properties depending on the field type. Some field types (like types `combo` and `select`) allow for an optionsProvider callback function in case the options must be dynamically calculated. Currently supported types are `textbox`, `checkbox`, `textarea`, `radio`, `select`, `combo`, and `password`.
+A field consists of an id, a label, a type, an initial value, and some properties depending on the field type. Some field types (like types `combo` and `select`) allow for an optionsProvider callback function in case the options must be dynamically calculated. Currently supported types are `textbox`, `checkbox`, `textarea`, `radio`, `select`, `combo`, `number`, `password`and `file-picker`.
 
 A `textarea` supports two properties: `rows` and `columns`. Types `radio`, `select`, and `combo` supports a property named `options` for including specific options that users can choose. 
+
+A `file-picker` is configured with `dialogOptions` which have the same structure than [window.OpenDialogOptions](https://code.visualstudio.com/api/references/vscode-api#OpenDialogOptions).
 
 ### Page Validators
 

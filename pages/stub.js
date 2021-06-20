@@ -13,6 +13,13 @@ function initEventListener(fn) {
           element.innerHTML = content.body;
         }
       });
+    } else if (message.command === "openFileDialogResponse") {
+      const returnObject = message.result.returnObject;
+      const { fieldId, fsPath } = returnObject;
+      if (fsPath) {
+        const htmlInput = document.getElementById(fieldId);
+        htmlInput.value = fsPath;
+      }
     } else {
       if (fn) {
         fn(message);
@@ -55,6 +62,16 @@ function finishPressed() {
   postCommandWithMap("finishPressed");
 }
 
+function openFileDialog(fieldId, options) {
+  vscode.postMessage({
+    command: "openFileDialog",
+    parameters: {
+      fieldId: fieldId,
+      options: options
+    }
+  });
+}
+
 function postCommandWithMap(cmdid) {
   vscode.postMessage({
     command: cmdid,
@@ -74,8 +91,9 @@ function darken(color, percentage) {
 
 function lighten(color, percentage) {
   const rgba = toRgba(color);
-  if (rgba == null)
+  if (rgba === null) {
     return color;
+  }
   const [r, g, b, a] = rgba;
   const amount = 255 * percentage / 100;
   return `rgba(${adjustLight(r, amount)}, ${adjustLight(g, amount)}, ${adjustLight(b, amount)}, ${a})`;
@@ -83,8 +101,9 @@ function lighten(color, percentage) {
 
 function opacity(color, percentage) {
   const rgba = toRgba(color);
-  if (rgba == null)
+  if (rgba === null) {
     return color;
+  }
   const [r, g, b, a] = rgba;
   return `rgba(${r}, ${g}, ${b}, ${a * (percentage / 100)})`;
 }
@@ -92,8 +111,9 @@ function opacity(color, percentage) {
 function toRgba(color) {
   color = color.trim();
   const result = cssColorRegex.exec(color);
-  if (result == null)
+  if (result === null) {
     return null;
+  }
   if (result[1] === "#") {
     const hex = result[2];
     switch (hex.length) {
