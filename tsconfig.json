@@ -19,5 +19,8 @@
   "include": [
     "src",
     "pages"
+  ],
+  "exclude": [
+    "pages/stub.js"
   ]
 }
