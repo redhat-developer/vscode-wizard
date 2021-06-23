@@ -468,6 +468,25 @@ code {
     margin-left: auto;
 }
 
+.vscode-button {
+  background-color: var(--color-button-background);
+  border: 1px solid var(--color-button-background);
+  color: var(--color-button-foreground);
+  max-width: 100px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 2px;
+  text-align: center;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+}
+
+.vscode-button:disabled {
+  opacity:.65;
+  pointer-events:none;
+}
+
 .icon {
     background-color: var(--color-foreground);
     display: inline-block;
@@ -832,7 +851,7 @@ section h2 {
     flex-wrap: wrap;
     padding-top: 10px;
     padding-left: 10px;
-    width: 100%;    
+    width: 100%;
 }
 
 .vscode-dark .section__collapsible {

@@ -324,35 +324,36 @@ export class WebviewWizard extends Wizard implements IWizard {
     if (this.definition.buttons) {
       for (let button of this.definition.buttons) {
         if (button.id == BUTTONS.PREVIOUS) {
-          ret = ret + this.createButton("buttonBack", "backPressed()", hasPrevious, button.label);
+          ret = ret + createButton("buttonBack", "backPressed()", hasPrevious, button.label);
         }
         if (button.id == BUTTONS.NEXT) {
-          ret = ret + this.createButton("buttonNext", "nextPressed()", hasNext, button.label)
+          ret = ret + createButton("buttonNext", "nextPressed()", hasNext, button.label)
         }
         if (button.id == BUTTONS.FINISH) {
-          ret = ret + this.createButton("buttonFinish", "finishPressed()", canFinishNow, button.label);
+          ret = ret + createButton("buttonFinish", "finishPressed()", canFinishNow, button.label);
         }
       }
     } else {
-      ret = this.createButton("buttonBack", "backPressed()", hasPrevious, "Back") +
-        this.createButton("buttonNext", "nextPressed()", hasNext, "Next") +
-        this.createButton("buttonFinish", "finishPressed()", canFinishNow, "Finish");
+      ret = createButton("buttonBack", "backPressed()", hasPrevious, "Back") +
+        createButton("buttonNext", "nextPressed()", hasNext, "Next") +
+        createButton("buttonFinish", "finishPressed()", canFinishNow, "Finish");
     }
     return ret;
   }
-
-  createButton(id: string, onclick: string, enabled: boolean, text: string): string {
-    return "<button type=\"button\" class=\"btn btn-secondary button--big\" id=\"" + id +
-      "\" onclick=\"" + onclick + "\" " + (enabled ? "" : " disabled") + ">" + text + "</button>\n";
-  }
-
 
   showDirtyState(def: WizardDefinition): boolean {
     return def.showDirtyState !== undefined && def.showDirtyState && this.isDirty;
   }
 }
 
-
+export function createButton(id: string | undefined, onclick: string | undefined, enabled: boolean, text: string): string {
+  return `<button type="button"
+                  class="vscode-button"
+                  ${id ? `id="${id}"` : ""}
+                  ${onclick ? `onclick="${onclick}"` : ""}
+                  ${enabled ? "" : " disabled"}>${text}</button>
+          `
+}
 
 export type WizardPageValidator = (parameters?: any) => ValidatorResponse;
 export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
