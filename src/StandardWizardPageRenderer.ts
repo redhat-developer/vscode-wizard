@@ -1,4 +1,4 @@
-import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse } from './WebviewWizard';
+import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse, createButton } from './WebviewWizard';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
 
 export class StandardWizardPageRenderer implements IWizardPageRenderer {
@@ -273,9 +273,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               ${placeholder ? `placeholder="${placeholder}"` : ""}
               oninput="fieldChanged(this)"
               data-setting data-setting-preview >
-       <button type="button"
-               class="btn btn-secondary"
-               onclick="openFileDialog('${id}'${options ? `, ${options}` : ""})">Browse...</button>`;
+       ${createButton(undefined, `openFileDialog('${id}'${options ? `, ${options}` : ""})`, !disabled, "Browse...")}`;
 
     return this.wrapHTMLField(field, htmlInput);
   }
