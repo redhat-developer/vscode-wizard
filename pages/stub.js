@@ -28,12 +28,15 @@ function initEventListener(fn) {
   });
 }
 
-function loadPage() {
+function loadWizard() {
 
   initEventListener(function (msg) {
     if (msg && msg.result) {
+      // Receive InitializeData command, initialize fields value
       const map = new Map(Object.entries(msg.result));
       wizardMap = map;
+      // Validate the current page fields
+      postCommandWithMap("validate");
     }
   });
 
@@ -51,11 +54,17 @@ function fieldChanged(elt, val) {
 }
 
 function nextPressed() {
+  // Open the next page
   postCommandWithMap("nextPressed");
+  // Validate the page fields
+  postCommandWithMap("validate");
 }
 
 function backPressed() {
+  // Open the previous page
   postCommandWithMap("backPressed");
+  // Validate the page fields
+  postCommandWithMap("validate");
 }
 
 function finishPressed() {
