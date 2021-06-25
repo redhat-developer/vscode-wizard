@@ -282,23 +282,23 @@ export class WebviewWizard extends Wizard implements IWizard {
     );
 
     // organize initial data
-    let m = new Map<string, string>();
-    for (let p of this.definition.pages) {
-      p.fields.forEach(element => {
-        if (isWizardPageSectionDefinition(element)) {
-          for (let p2 of element.childFields) {
-            if (p2.initialValue) {
-              m.set(p2.id, p2.initialValue);
+    const fieldsData = new Map<string, string>();
+    for (const page of this.definition.pages) {
+      page.fields.forEach(definition => {
+        if (isWizardPageSectionDefinition(definition)) {
+          for (const child of definition.childFields) {
+            if (child.initialValue != undefined) {
+              fieldsData.set(child.id, child.initialValue);
             }
           }
-        } else if (isWizardPageFieldDefinition(element)) {
-          if (element.initialValue) {
-            m.set(element.id, element.initialValue);
+        } else if (isWizardPageFieldDefinition(definition)) {
+          if (definition.initialValue != undefined) {
+            fieldsData.set(definition.id, definition.initialValue);
           }
         }
       });
     }
-    sendInitialData(this.id, new Map([...m, ...this.initialData]));
+    sendInitialData(this.id, new Map([...fieldsData, ...this.initialData]));
   }
   addPages(): void {
     for (let d of this.definition.pages) {
@@ -357,6 +357,12 @@ export function createButton(id: string | undefined, onclick: string | undefined
 
 export type WizardPageValidator = (parameters?: any) => ValidatorResponse;
 export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
+
+export interface WizardPageFieldOptionLabelProvider {
+  getItems(parameters?: any) : any;
+  getValueItem?(item: any) : string;
+  getLabelItem(item: any) : string;
+};
 
 export const UPDATE_TITLE: string = "vscode-wizard/updateWizardTitle";
 
@@ -432,6 +438,6 @@ export interface WizardPageFieldDefinition {
   initialValue?: string;
   placeholder?: string,
   properties?: any;
-  optionProvider?: WizardPageFieldOptionProvider;
+  optionProvider?: WizardPageFieldOptionProvider | WizardPageFieldOptionLabelProvider;
   dialogOptions? : vscode.OpenDialogOptions;
 }
