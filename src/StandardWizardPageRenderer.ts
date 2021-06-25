@@ -1,5 +1,6 @@
-import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse, createButton } from './WebviewWizard';
+import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse, createButton, WizardPageFieldOptionLabelProvider } from './WebviewWizard';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
+import { WizardPageFieldOptionProvider } from '.';
 
 export class StandardWizardPageRenderer implements IWizardPageRenderer {
 
@@ -203,13 +204,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const id = field.id;
     const value = this.getInitialValue(field, data);
     const disabled = !this.isFieldEnabled(field, data);
-
-    const options = this.getFieldOptions(field, data);
-    const htmlOptions = options?.map(
-      function (option: any) {
-        const selected: boolean = value ? (value === option) : false;
-        return `<option${selected ? " selected" : ""}>${option}</option>`;
-      }).join("");
+    const htmlOptions = this.generateHTMLOptions(field, data);
 
     const htmlSelect =
       `<select id="${id}"
@@ -233,13 +228,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const value = this.getInitialValue(field, data);
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
-
-    const options = this.getFieldOptions(field, data);
-    const htmlOptions = options?.map(
-      function (option: any) {
-        const selected: boolean = value ? (value === option) : false;
-        return `<option value="${option}"${selected ? " selected" : ""}>`;
-      }).join("");
+    const htmlOptions = this.generateHTMLOptions(field, data);
 
     const listId = `${id}InternalList`;
     const htmlcombo =
@@ -311,9 +300,19 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
 
   getFieldOptions(field: WizardPageFieldDefinition, data: any) {
     if (field.optionProvider) {
-      return field.optionProvider(data);
+      const optionProvider = this.getFieldOptionLabelProvider(field);
+      return optionProvider ? optionProvider.getItems(data) : (<WizardPageFieldOptionProvider>field.optionProvider)(data);
     }
     return field.properties?.options;
+  }
+
+  getFieldOptionLabelProvider(field: WizardPageFieldDefinition): WizardPageFieldOptionLabelProvider | undefined {
+    if (field.optionProvider) {
+      const optionProvider = field.optionProvider;
+      if ((optionProvider as any).getItems) {
+        return (<WizardPageFieldOptionLabelProvider>optionProvider);
+      }
+    }
   }
 
   wrapHTMLField(oneField: WizardPageFieldDefinition, fieldContent: string, labelAfterField = false, labelForNoStyle = false): string {
@@ -336,5 +335,21 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
        </p>`;
 
     return settingInput + hint;
+  }
+
+  generateHTMLOptions(field: WizardPageFieldDefinition, data: any): string {
+    const value = this.getInitialValue(field, data);
+    const optionLabelProvider = this.getFieldOptionLabelProvider(field);
+    const options = this.getFieldOptions(field, data);
+
+    const htmlOptions = options?.map(
+      function (option: any) {
+        const optionValue = optionLabelProvider && optionLabelProvider.getValueItem ? optionLabelProvider.getValueItem(option) : undefined;
+        const optionLabel = optionLabelProvider ? optionLabelProvider.getLabelItem(option) : option;
+        const selected: boolean = value ? (optionValue ? value === optionValue : value === optionLabel) : false;
+        return `<option${optionValue ? ` value="${optionValue}"` : ""}${selected ? " selected" : ""}>${optionLabel}</option>`;
+      }).join("");
+
+    return htmlOptions;
   }
 }
