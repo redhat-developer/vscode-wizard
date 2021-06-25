@@ -279,7 +279,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
   }
 
   validationDiv(id: string): string {
-    return `<div style="display:block;text-align:left;width:180px;" id="${id}Validation">&nbsp;</div>`;
+    return `<div style="display:block;text-align:left;" id="${id}Validation">&nbsp;</div>`;
   }
 
   labelFor(fieldId: string, labelVal: string): string {
