@@ -41,10 +41,13 @@ export class WebviewWizard extends Wizard implements IWizard {
     this.readyMapping = {
       command: "ready",
       handler: async (parameters: any) => {
+        // Get templates for the first page content and validation result
+        const templates =  this.getShowCurrentPageTemplates(parameters);
+        templates.push(...this.createValidationTemplates(parameters));
         return {
           returnObject: {
           },
-          templates: this.getShowCurrentPageTemplates(initialData)
+          templates: templates
         };
       }
     };
@@ -82,18 +85,20 @@ export class WebviewWizard extends Wizard implements IWizard {
       handler: async (parameters: any) => {
         if (!this.isDirty) {
           this.isDirty = true;
-          this.updateWizardPanelTitle(this.id, this.title, this.isDirty);
+          this.updateWizardPanelTitle();
         }
-
-        const validations = this.generateValidationTemplates(parameters);
-        validations.push(
-          { id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false) });
         return {
           returnObject: {},
-          templates: validations
+          templates: this.createValidationTemplates(parameters)
         };
       }
     };
+  }
+
+  private createValidationTemplates(parameters : any) {
+    const validations = this.generateValidationTemplates(parameters);
+    validations.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false) });
+    return validations;
   }
 
   canFinishInternal(parameters: any): boolean {
@@ -133,20 +138,26 @@ export class WebviewWizard extends Wizard implements IWizard {
     return nextPage;
   }
 
-  backImpl(data: any): HandlerResponse {
-    this.currentPage = this.getActualPreviousPage(data);
+  backImpl(parameters: any): HandlerResponse {
+    this.currentPage = this.getActualPreviousPage(parameters);
+    // Get templates for the previous page content and validation result
+    const templates =  this.getShowCurrentPageTemplates(parameters);
+    templates.push(...this.createValidationTemplates(parameters));
     return {
       returnObject: {},
-      templates: this.getShowCurrentPageTemplates(data)
+      templates: templates
     };
   }
 
-  nextImpl(data: any): HandlerResponse {
-    let nextPage: IWizardPage | null = this.getActualNextPage(data);
+  nextImpl(parameters: any): HandlerResponse {
+    let nextPage: IWizardPage | null = this.getActualNextPage(parameters);
     this.currentPage = nextPage;
+    // Get templates for the next page content and validation result
+    const templates =  this.getShowCurrentPageTemplates(parameters);
+    templates.push(...this.createValidationTemplates(parameters));
     return {
       returnObject: {},
-      templates: this.getShowCurrentPageTemplates(data)
+      templates: templates
     };
   }
 
@@ -168,17 +179,16 @@ export class WebviewWizard extends Wizard implements IWizard {
       if (resp.success) {
         this.isDirty = false;
       }
-      let templatesToReturn = [];
-      for (let oneTemplate of resp.templates) {
+      const templatesToReturn = [];
+      for (const oneTemplate of resp.templates) {
         if (oneTemplate.id === UPDATE_TITLE && oneTemplate.content !== undefined) {
-          templatesToReturn.push({ id: 'wizardTitle', content: this.title });
-        } else {
-          templatesToReturn.push(oneTemplate);
+          this.title = oneTemplate.content;
         }
+        templatesToReturn.push(oneTemplate);
       }
 
       // Handle title changes
-      this.updateWizardPanelTitle(this.id, this.title, this.isDirty);
+      this.updateWizardPanelTitle();
 
       return {
         returnObject: resp.returnObject,
@@ -198,7 +208,8 @@ export class WebviewWizard extends Wizard implements IWizard {
     }
   }
 
-  updateWizardPanelTitle(id: string, title: string, dirty: boolean) {
+  updateWizardPanelTitle() {
+    const dirty = this.showDirtyState(this.definition);
     updatePanelTitle(this.id, this.title + (dirty ? " ●" : ""));
   }
   close(): void {
@@ -359,9 +370,9 @@ export type WizardPageValidator = (parameters?: any) => ValidatorResponse;
 export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
 
 export interface WizardPageFieldOptionLabelProvider {
-  getItems(parameters?: any) : any;
-  getValueItem?(item: any) : string;
-  getLabelItem(item: any) : string;
+  getItems(parameters?: any): any;
+  getValueItem?(item: any): string;
+  getLabelItem(item: any): string;
 };
 
 export const UPDATE_TITLE: string = "vscode-wizard/updateWizardTitle";
@@ -439,5 +450,5 @@ export interface WizardPageFieldDefinition {
   placeholder?: string,
   properties?: any;
   optionProvider?: WizardPageFieldOptionProvider | WizardPageFieldOptionLabelProvider;
-  dialogOptions? : vscode.OpenDialogOptions;
+  dialogOptions?: vscode.OpenDialogOptions;
 }
