@@ -42,10 +42,11 @@ export class WebviewWizard extends Wizard implements IWizard {
       command: "ready",
       handler: async (parameters: any) => {
         // Get templates for the first page content and validation result
-        const templates =  this.getShowCurrentPageTemplates(parameters);
+        const templates = this.getShowCurrentPageTemplates(parameters);
         templates.push(...this.createValidationTemplates(parameters));
         return {
           returnObject: {
+            focusedField: this.currentPage?.getFocusedField()
           },
           templates: templates
         };
@@ -95,7 +96,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     };
   }
 
-  private createValidationTemplates(parameters : any) {
+  private createValidationTemplates(parameters: any) {
     const validations = this.generateValidationTemplates(parameters);
     validations.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false) });
     return validations;
@@ -141,10 +142,12 @@ export class WebviewWizard extends Wizard implements IWizard {
   backImpl(parameters: any): HandlerResponse {
     this.currentPage = this.getActualPreviousPage(parameters);
     // Get templates for the previous page content and validation result
-    const templates =  this.getShowCurrentPageTemplates(parameters);
+    const templates = this.getShowCurrentPageTemplates(parameters);
     templates.push(...this.createValidationTemplates(parameters));
     return {
-      returnObject: {},
+      returnObject: {
+        focusedField: this.currentPage?.getFocusedField()
+      },
       templates: templates
     };
   }
@@ -153,10 +156,12 @@ export class WebviewWizard extends Wizard implements IWizard {
     let nextPage: IWizardPage | null = this.getActualNextPage(parameters);
     this.currentPage = nextPage;
     // Get templates for the next page content and validation result
-    const templates =  this.getShowCurrentPageTemplates(parameters);
+    const templates = this.getShowCurrentPageTemplates(parameters);
     templates.push(...this.createValidationTemplates(parameters));
     return {
-      returnObject: {},
+      returnObject: {
+        focusedField: this.currentPage?.getFocusedField()
+      },
       templates: templates
     };
   }
@@ -280,6 +285,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     if (cur instanceof WebviewWizardPage) { return cur; }
     return null;
   }
+
   open(): void {
     super.open();
     this.currentPage = this.getStartingPage();
@@ -365,7 +371,6 @@ export function createButton(id: string | undefined, onclick: string | undefined
                   ${enabled ? "" : " disabled"}>${text}</button>
           `
 }
-
 export type WizardPageValidator = (parameters?: any) => ValidatorResponse;
 export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
 
@@ -384,7 +389,6 @@ export enum SEVERITY {
   ERROR = 4
 }
 
-
 export enum BUTTONS {
   PREVIOUS = 1,
   NEXT = 2,
@@ -396,14 +400,15 @@ export interface ButtonItem {
   label: string
 }
 
-
 export interface ValidatorResponseItem {
   template: Template;
   severity: SEVERITY
 }
+
 export interface ValidatorResponse {
   items: ValidatorResponseItem[]
 }
+
 export interface WizardDefinition {
   title: string;
   description?: string;
@@ -415,7 +420,6 @@ export interface WizardDefinition {
   buttons?: ButtonItem[],
   showDirtyState?: boolean
 }
-
 
 export interface WizardPageDefinition {
   id: string;
@@ -448,6 +452,7 @@ export interface WizardPageFieldDefinition {
   description?: string;
   initialValue?: string;
   placeholder?: string,
+  focus?: boolean, // true if the field must got the focus and false otherwise.
   properties?: any;
   optionProvider?: WizardPageFieldOptionProvider | WizardPageFieldOptionLabelProvider;
   dialogOptions?: vscode.OpenDialogOptions;

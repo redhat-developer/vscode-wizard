@@ -4,7 +4,7 @@ import { WizardPageDefinition, isWizardPageFieldDefinition, isWizardPageSectionD
 import { Template } from './pageImpl';
 import { StandardWizardPageRenderer } from './StandardWizardPageRenderer';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
-import { WizardDefinition } from '.';
+import { WizardDefinition, WizardPageFieldDefinition } from '.';
 export class WebviewWizardPage extends WizardPage implements IWizardPage {
     pageDefinition:WizardPageDefinition;
     wizardDefinition:WizardDefinition;
@@ -12,6 +12,14 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         super(pageDefinition.id, pageDefinition.title, pageDefinition.description);
         this.wizardDefinition = wizardDefinition;
         this.pageDefinition = pageDefinition;
+        super.setFocusedField(this.findFocusedField());
+    }
+
+    private findFocusedField() : string | undefined{
+      if (this.pageDefinition.fields.length > 0) {
+        const field = this.pageDefinition.fields.find(field => isWizardPageFieldDefinition(field) && (<WizardPageFieldDefinition>field).focus === true);
+        return field ? field.id : this.pageDefinition.fields[0].id;
+      }
     }
 
     getPageDefinition(): WizardPageDefinition {

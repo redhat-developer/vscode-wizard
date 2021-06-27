@@ -7,6 +7,7 @@ export class WizardPage implements IWizardPage {
     isPageCompleteVar: boolean;
     wizard: IWizard | null;
     previousPage: IWizardPage | null;
+    focusedField?: string; // field id which have the focus
     constructor(pageId: string, pageName: string | undefined, description: string | undefined) {
         this.id = pageId;
         this.name = pageName;
@@ -51,5 +52,13 @@ export class WizardPage implements IWizardPage {
     }
     setWizard(wizard: IWizard): void {
         this.wizard = wizard;
+    }
+
+    setFocusedField(focusedField: string | undefined) : void {
+      this.focusedField = focusedField;
+    }
+
+    getFocusedField() : string | undefined {
+      return this.focusedField;
     }
 }
