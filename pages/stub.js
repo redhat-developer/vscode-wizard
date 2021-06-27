@@ -25,6 +25,14 @@ function initEventListener(fn) {
         fn(message);
       }
     }
+    // Update focused field
+    const focusedField = message?.focusedField;
+    if (focusedField) {
+      const elt = document.getElementById(focusedField);
+      if (elt !== null) {
+        elt.focus();
+      }
+    }
   });
 }
 

@@ -33,6 +33,7 @@ interface CommandResponse {
   command: string;
   contents?: Content[];
   result?: any;
+  focusedField?: string;
 }
 
 export const currentPanels: Map<string, vscode.WebviewPanel> = new Map();
@@ -180,6 +181,7 @@ function createDispatch(
         } else {
           response.result = result;
         }
+        response.focusedField = result.returnObject.focusedField;
         const panel: vscode.WebviewPanel | undefined = currentPanels.get(currentPanelName);
         if (panel && panel !== undefined) {
           panel.webview.postMessage(response);
