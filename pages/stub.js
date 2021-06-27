@@ -35,13 +35,9 @@ function loadWizard() {
       // Receive InitializeData command, initialize fields value
       const map = new Map(Object.entries(msg.result));
       wizardMap = map;
-      // Validate the current page fields
-      postCommandWithMap("validate");
+      // Notify that the first page can be displayed
+      postCommandWithMap("ready");
     }
-  });
-
-  vscode.postMessage({
-    command: "ready"
   });
 
   initializeAndWatchThemeColors();
@@ -56,15 +52,11 @@ function fieldChanged(elt, val) {
 function nextPressed() {
   // Open the next page
   postCommandWithMap("nextPressed");
-  // Validate the page fields
-  postCommandWithMap("validate");
 }
 
 function backPressed() {
   // Open the previous page
   postCommandWithMap("backPressed");
-  // Validate the page fields
-  postCommandWithMap("validate");
 }
 
 function finishPressed() {
