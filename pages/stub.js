@@ -19,6 +19,8 @@ function initEventListener(fn) {
       if (fsPath) {
         const htmlInput = document.getElementById(fieldId);
         htmlInput.value = fsPath;
+        // set the value doesn't fire oninput listener, the fieldChanged must be called here
+        fieldChanged(htmlInput);
       }
     } else {
       if (fn) {
