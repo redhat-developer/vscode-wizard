@@ -295,7 +295,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
   }
 
   getFieldPlaceHolder(field: WizardPageFieldDefinition) {
-    return !field.initialValue && field.placeholder ? field.placeholder : undefined;
+    return field.placeholder;
   }
 
   getFieldOptions(field: WizardPageFieldDefinition, data: any) {
