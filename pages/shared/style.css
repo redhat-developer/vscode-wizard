@@ -97,6 +97,10 @@ input[type='checkbox'][disabled] {
     cursor: default;
 }
 
+input[type='checkbox'] + label {
+    margin-right: 10px;
+}
+
 input[type='number'],
 input[type='text'],
 input[type='password'],
