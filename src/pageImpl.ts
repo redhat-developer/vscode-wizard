@@ -181,7 +181,7 @@ function createDispatch(
         } else {
           response.result = result;
         }
-        response.focusedField = result.returnObject?.focusedField;
+        response.focusedField = result?.returnObject?.focusedField;
         const panel: vscode.WebviewPanel | undefined = currentPanels.get(currentPanelName);
         if (panel && panel !== undefined) {
           panel.webview.postMessage(response);
