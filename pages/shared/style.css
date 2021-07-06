@@ -486,9 +486,27 @@ code {
   align-items: center;
 }
 
+.vscode-button:hover:not(:disabled) {
+  cursor: pointer;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-hoverBackground);
+}
+
 .vscode-button:disabled {
-  opacity:.65;
-  pointer-events:none;
+  opacity: 0.4 !important;
+  cursor: default;
+}
+
+.vscode-button:focus {
+  outline-color: var(--vscode-focusBorder);
+  outline-width: 1px;
+  outline-style: solid;
+  outline-offset: 2spx !important;
+}
+
+.vscode-button:hover {
+  text-decoration: none !important;
+  background-color: var(--color-button-background);
 }
 
 .icon {
