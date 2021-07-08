@@ -2,54 +2,54 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <base href="{{base}}" />
-  <script src="stub.js" ></script>
-  <link href="shared/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="shared/style.css" rel="stylesheet" />
-  <script src="shared/jquery/jquery-3.4.1.slim.min.js"></script>
-  <script src="shared/popper.js/popper.min.js"></script>
-  <script src="shared/bootstrap/js/bootstrap.min.js"></script>
-  <style>
-    @font-face {
-      font-family: 'codicon';
-      src: url('shared/codicon.ttf') format('truetype');
-    }
-  </style>
-  <title>Wizard</title>
+    <meta charset="UTF-8" />
+    <base href="{{base}}" />
+    <script src="stub.js"></script>
+    <link href="shared/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="shared/style.css" rel="stylesheet" />
+    <script src="shared/jquery/jquery-3.4.1.slim.min.js"></script>
+    <script src="shared/popper.js/popper.min.js"></script>
+    <script src="shared/bootstrap/js/bootstrap.min.js"></script>
+    <style>
+        @font-face {
+            font-family: 'codicon';
+            src: url('shared/codicon.ttf') format('truetype');
+        }
+    </style>
+    <title>Wizard</title>
 </head>
 
 <body>
-  <div class="container">
-    <div id="wizardHeader">
-        <div id="wizardBanner"></div>
-        <h2 id="wizardTitle" class="section__title section__title--primary"></h2>
-        <p id="wizardDescription" class="blurb ml-0 mr-0"></p>
-    </div>
-    <div class="content__area">
-      <div class="container-fluid">
-        <div class="row  flex-xl-nowrap">
-          <main class="col-md-10 col-xl-10 py-md-3 pl-md-4 pr-md-4 bd-content">
-            <div id="wizardPageHeader">
-              <h2 id="pageTitle" class="section__title section__title--primary"></h2>
-              <p id="pageDescription" class="blurb ml-0 mr-0"></p>
-              <hr />
-            </div>
-            <div id="content"></div>
-            <div id="wizardControls">
-              <button type="button" class="btn btn-secondary" id="buttonNext" onclick="nextPressed()">Next</button>
-              <button type="button" class="btn btn-secondary" id="buttonFinish" onclick="finishPressed()">Finish</button>
-            </div>
-          </main>
+    <div class="container">
+        <div id="wizardHeader">
+            <div id="wizardBanner"></div>
+            <h2 id="wizardTitle" class="section__title section__title--primary"></h2>
+            <p id="wizardDescription" class="blurb ml-0 mr-0"></p>
         </div>
-      </div>
+        <div class="content__area">
+            <div class="container-fluid">
+                <div class="row  flex-xl-nowrap">
+                    <main class="col-md-11 col-xl-11 py-md-3 pl-md-4 pr-md-4 bd-content">
+                        <div id="wizardPageHeader">
+                            <h2 id="pageTitle" class="section__title section__title--primary"></h2>
+                            <p id="pageDescription" class="blurb ml-0 mr-0"></p>
+                            <hr />
+                        </div>
+                        <div id="content"></div>
+                        <div id="wizardControls">
+                            <button type="button" class="btn btn-secondary" id="buttonNext" onclick="nextPressed()">Next</button>
+                            <button type="button" class="btn btn-secondary" id="buttonFinish" onclick="finishPressed()">Finish</button>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script type="text/javascript">
-    const vscode = acquireVsCodeApi();
-    loadWizard();
-  </script>
+    <script type="text/javascript">
+        const vscode = acquireVsCodeApi();
+        loadWizard();
+    </script>
 
 </body>
 

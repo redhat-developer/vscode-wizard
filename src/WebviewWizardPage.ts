@@ -53,7 +53,16 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
                     this.setPageComplete(false);
                 }
                 let img: string = this.severityToImage(oneItem.severity);
-                oneItem.template.content = img + (oneItem.template.content ? oneItem.template.content : "&nbsp;");
+                let clazz = "";
+                if( oneItem.severity == SEVERITY.ERROR) 
+                    clazz = "error-message";
+                else if( oneItem.severity == SEVERITY.WARN) 
+                    clazz = "warn-message";
+                else 
+                    clazz = "info-message";
+
+                let inner = img + (oneItem.template.content ? oneItem.template.content : "&nbsp;");
+                oneItem.template.content = "<div class=\"" + clazz + "\">" + inner + "</div>";
                 templates = templates.concat(oneItem.template);
             }
         }

@@ -97,7 +97,7 @@ input[type='checkbox'][disabled] {
     cursor: default;
 }
 
-input[type='checkbox'] + label {
+input[type='checkbox']+label {
     margin-right: 10px;
 }
 
@@ -473,40 +473,40 @@ code {
 }
 
 .vscode-button {
-  background-color: var(--color-button-background);
-  border: 1px solid var(--color-button-background);
-  color: var(--color-button-foreground);
-  max-width: 100px;
-  box-sizing: border-box;
-  width: 100%;
-  padding: 2px;
-  text-align: center;
-  cursor: pointer;
-  justify-content: center;
-  align-items: center;
+    background-color: var(--color-button-background);
+    border: 1px solid var(--color-button-background);
+    color: var(--color-button-foreground);
+    max-width: 100px;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 2px;
+    text-align: center;
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
 }
 
 .vscode-button:hover:not(:disabled) {
-  cursor: pointer;
-  color: var(--vscode-button-foreground);
-  background: var(--vscode-button-hoverBackground);
+    cursor: pointer;
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-hoverBackground);
 }
 
 .vscode-button:disabled {
-  opacity: 0.4 !important;
-  cursor: default;
+    opacity: 0.4 !important;
+    cursor: default;
 }
 
 .vscode-button:focus {
-  outline-color: var(--vscode-focusBorder);
-  outline-width: 1px;
-  outline-style: solid;
-  outline-offset: 2spx !important;
+    outline-color: var(--vscode-focusBorder);
+    outline-width: 1px;
+    outline-style: solid;
+    outline-offset: 2spx !important;
 }
 
 .vscode-button:hover {
-  text-decoration: none !important;
-  background-color: var(--color-button-background);
+    text-decoration: none !important;
+    background-color: var(--color-button-background);
 }
 
 .icon {
@@ -550,6 +550,7 @@ h2 .icon {
     mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8.568 1.031A6.8 6.8 0 0 1 12.76 3.05a7.06 7.06 0 0 1 .46 9.39 6.85 6.85 0 0 1-8.58 1.74 7 7 0 0 1-3.12-3.5 7.12 7.12 0 0 1-.23-4.71 7 7 0 0 1 2.77-3.79 6.8 6.8 0 0 1 4.508-1.149zM9.04 13.88a5.89 5.89 0 0 0 3.41-2.07 6.07 6.07 0 0 0-.4-8.06 5.82 5.82 0 0 0-7.43-.74 6.06 6.06 0 0 0 .5 10.29 5.81 5.81 0 0 0 3.92.58zM8.51 7h-1v4h1V7zm0-2h-1v1h1V5z" clip-rule="evenodd"/></svg>');
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
+    background-color: var(--vscode-editorInfo-foreground);
 }
 
 .icon__warn {
@@ -557,6 +558,7 @@ h2 .icon {
     mask-image: url('data:image/svg+xml;utf8,<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>');
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
+    background-color: var(--vscode-editorWarning-foreground);
 }
 
 .icon__error {
@@ -1459,7 +1461,19 @@ section h2 {
 }
 
 div.error-message {
-    display:block;
-    text-align:left;
+    display: block;
+    text-align: left;
     color: var(--vscode-editorError-foreground);
+}
+
+div.warn-message {
+    display: block;
+    text-align: left;
+    color: var(--vscode-editorWarning-foreground);
+}
+
+div.info-message {
+    display: block;
+    text-align: left;
+    color: var(--vscode-editorInfo-foreground);
 }

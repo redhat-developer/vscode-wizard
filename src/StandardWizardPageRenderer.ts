@@ -268,7 +268,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
   }
 
   validationDiv(id: string): string {
-    return `<div class="error-message" id="${id}Validation">&nbsp;</div>`;
+    return `<div id="${id}Validation">&nbsp;</div>`;
   }
 
   labelFor(fieldId: string, labelVal: string): string {
