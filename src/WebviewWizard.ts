@@ -17,6 +17,7 @@ export class WebviewWizard extends Wizard implements IWizard {
   openFileDialogMapping: MesssageMapping;
   validateMapping: MesssageMapping;
   currentPage: IWizardPage | null = null;
+  previousParameters: any = {};
   id: string;
   type: string;
   title: string;
@@ -97,8 +98,9 @@ export class WebviewWizard extends Wizard implements IWizard {
   }
 
   private createValidationTemplates(parameters: any) {
-    const validations = this.generateValidationTemplates(parameters);
+    const validations = this.generateValidationTemplates(parameters, this.previousParameters);
     validations.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false) });
+    this.previousParameters = parameters;
     return validations;
   }
 
@@ -260,8 +262,8 @@ export class WebviewWizard extends Wizard implements IWizard {
       '<p id="pageDescription" class="blurb ml-0 mr-0"></p>\n' +
       '<hr />\n';
   }
-  generateValidationTemplates(parameters: any): Template[] {
-    return this.getCurrentPage() !== null ? this.getCurrentPage()!.getValidationTemplates(parameters) : [];
+  generateValidationTemplates(parameters: any, previousParameters: any): Template[] {
+    return this.getCurrentPage() !== null ? this.getCurrentPage()!.getValidationTemplates(parameters, this.previousParameters) : [];
   }
   getCurrentPageName(): string | undefined {
     return (this.currentPage === null ? "" : this.currentPage.getName());
@@ -321,14 +323,14 @@ export class WebviewWizard extends Wizard implements IWizard {
     for (let d of this.definition.pages) {
       let page: WebviewWizardPage = new WebviewWizardPage(d, this.definition);
       page.setWizard(this);
-      page.validate({});
+      page.validate({}, {});
       this.addPage(page);
     }
   }
   getUpdatedWizardControls(parameters: any, validate: boolean): string {
     if (validate) {
       // Don't care about return value here, just want pageComplete to be set
-      this.generateValidationTemplates(parameters);
+      this.generateValidationTemplates(parameters, this.previousParameters);
     }
     let hasPrevious = (this.currentPage !== null &&
       this.getActualPreviousPage(this.currentPage) !== null);
@@ -371,7 +373,7 @@ export function createButton(id: string | undefined, onclick: string | undefined
                   ${enabled ? "" : " disabled"}>${text}</button>
           `
 }
-export type WizardPageValidator = (parameters?: any) => ValidatorResponse;
+export type WizardPageValidator = (parameters: any, previousParameters?: any) => ValidatorResponse;
 export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
 
 export interface WizardPageFieldOptionLabelProvider {
@@ -406,7 +408,8 @@ export interface ValidatorResponseItem {
 }
 
 export interface ValidatorResponse {
-  items: ValidatorResponseItem[]
+  items: ValidatorResponseItem[],
+  fieldRefresh?: string[]
 }
 
 export interface WizardDefinition {
