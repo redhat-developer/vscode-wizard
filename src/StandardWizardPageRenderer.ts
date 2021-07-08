@@ -10,7 +10,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
       if (isWizardPageSectionDefinition(field)) {
         htmlContent += this.oneSectionAsString(field, data);
       } else if (isWizardPageFieldDefinition(field)) {
-        htmlContent += this.oneFieldAsString(field, data);
+        htmlContent += this.wrapOneFieldAsString(field.id, this.oneFieldAsString(field, data), data);
       }
     }
     return htmlContent;
@@ -25,7 +25,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
 
     const htmlSectionContent = childFields.map(
       function (field) {
-        return renderer.oneFieldAsString(field, data);
+        return renderer.wrapOneFieldAsString(field.id, renderer.oneFieldAsString(field, data), data);
       }
     ).join("");
 
@@ -48,8 +48,11 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
   }
 
   oneFieldAsString(field: WizardPageFieldDefinition, data: any): string {
-    const htmlField = this.createHTMLField(field, data);
-    return this.divClass("setting", htmlField);
+    return this.createHTMLField(field, data);
+  }
+  
+  wrapOneFieldAsString(fieldId: string, contents: string, data: any): string {
+    return this.divClassId("setting", fieldId + "Field", contents);
   }
 
   createHTMLField(field: WizardPageFieldDefinition, data: any): string {
@@ -138,7 +141,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
   checkBoxAsHTML(field: WizardPageFieldDefinition, data: any): string {
     const id = field.id;
     const value = this.getInitialValue(field, data);
-    const checked = value !== '' && value !== undefined;
+    const checked = value && value !== '' && value !== undefined;
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
 
@@ -283,15 +286,19 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     return `<div class="${classname}">${inner}</div>`;
   }
 
+  divClassId(classname: string, id: string, inner: string): string {
+    return `<div class="${classname}" id="${id}">${inner}</div>`;
+  }
+
   isFieldEnabled(oneField: WizardPageFieldDefinition, data: any): boolean {
     return (oneField.properties && oneField.properties.disabled ? false : true);
   }
 
   getInitialValue(oneField: WizardPageFieldDefinition, data: any): string | undefined {
     if (data instanceof Map) {
-      return data && data.get(oneField.id) ? data.get(oneField.id) : oneField.initialValue;
+      return data && data.has(oneField.id) ? data.get(oneField.id) : oneField.initialValue;
     }
-    return data && data[oneField.id] ? data[oneField.id] : oneField.initialValue;
+    return data && data.hasOwnProperty(oneField.id) ? data[oneField.id] : oneField.initialValue;
   }
 
   getFieldPlaceHolder(field: WizardPageFieldDefinition) {
