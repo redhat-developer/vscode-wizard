@@ -409,7 +409,7 @@ export interface ValidatorResponseItem {
 
 export interface ValidatorResponse {
   items: ValidatorResponseItem[],
-  fieldRefresh?: string[]
+  fieldRefresh?: Map<string,FieldDefinitionState>;
 }
 
 export interface WizardDefinition {
@@ -455,8 +455,17 @@ export interface WizardPageFieldDefinition {
   description?: string;
   initialValue?: string;
   placeholder?: string,
-  focus?: boolean, // true if the field must got the focus and false otherwise.
+  // focus:  true if the field must got the focus and false otherwise.
+  focus?: boolean, 
+  // executableJavascriptOnModification:  this name is intentionally long so as to avoid confusion
+  executableJavascriptOnModification?: string;
   properties?: any;
   optionProvider?: WizardPageFieldOptionProvider | WizardPageFieldOptionLabelProvider;
   dialogOptions?: vscode.OpenDialogOptions;
+  initialState?: FieldDefinitionState;
+}
+
+export interface FieldDefinitionState {
+  enabled?: boolean,
+  visible?: boolean
 }
