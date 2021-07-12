@@ -1,9 +1,12 @@
-import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse, createButton, WizardPageFieldOptionLabelProvider } from './WebviewWizard';
+import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse, createButton, WizardPageFieldOptionLabelProvider, FieldDefinitionState } from './WebviewWizard';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
 import { WizardPageFieldOptionProvider } from '.';
 
 export class StandardWizardPageRenderer implements IWizardPageRenderer {
-
+  private stateMap: Map<string,FieldDefinitionState>;
+  constructor(state: Map<string,FieldDefinitionState>) {
+    this.stateMap = state;
+  }
   getContentAsHTML(definition: WizardPageDefinition, data: any): string {
     let htmlContent = "";
     for (let field of definition.fields) {
@@ -52,7 +55,11 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
   }
   
   wrapOneFieldAsString(fieldId: string, contents: string, data: any): string {
-    return this.divClassId("setting", fieldId + "Field", contents);
+    let state : FieldDefinitionState | undefined = this.stateMap.get(fieldId);
+    if(state === undefined || !state.hasOwnProperty("enabled") || state.enabled) {
+      return this.divClassId("setting", fieldId + "Field", contents);
+    }
+    return this.divClassId("setting", fieldId + "Field", "");
   }
 
   createHTMLField(field: WizardPageFieldDefinition, data: any): string {
@@ -86,15 +93,15 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const value = this.getInitialValue(field, data);
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
-
+    const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
     const htmlInput =
       `<input id="${id}"
               name="${id}"
               type="text"
-              ${value ? `value="${value}"` : ""}
+              ${value !== undefined ? `value="${value}"` : ""}
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
-              oninput="fieldChanged(this)"
+              oninput="${jsFunction}"
               data-setting data-setting-preview >`;
 
     return this.wrapHTMLField(field, htmlInput);
@@ -105,15 +112,16 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const value = this.getInitialValue(field, data);
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
+    const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
 
     const htmlInput =
       `<input id="${id}"
               name="${id}"
               type="number"
-              ${value ? `value="${value}"` : ""}
+              ${value !== undefined ? `value="${value}"` : ""}
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
-              oninput="fieldChanged(this)"
+              oninput="${jsFunction}"
               data-setting data-setting-preview >`;
 
     return this.wrapHTMLField(field, htmlInput);
@@ -124,15 +132,16 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const value = this.getInitialValue(field, data);
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
+    const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
 
     const htmlInput =
       `<input id="${id}"
               name="${id}"
               type="password"
-              ${value ? `value="${value}"` : ""}
+              ${value !== undefined ? `value="${value}"` : ""}
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
-              oninput="fieldChanged(this)"
+              oninput="${jsFunction}"
               data-setting data-setting-preview >`;
 
     return this.wrapHTMLField(field, htmlInput);
@@ -144,15 +153,16 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const checked = value && value !== '' && value !== undefined;
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
+    const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this, this.checked)");
 
     const htmlInput =
       `<input id="${id}"
               name="${id}"
               type="checkbox"
-              ${value ? `value="${value}"` : ""}
+              ${value !== undefined ? `value="${value}"` : ""}
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
-              oninput="fieldChanged(this, this.checked)"
+              oninput="${jsFunction}"
               ${checked ? "checked" : ""}
               data-setting data-setting-preview >`;
 
@@ -166,6 +176,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const placeholder = this.getFieldPlaceHolder(field);
     const cols = field.properties?.columns;
     const rows = field.properties?.rows;
+    const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
 
     const htmlTextarea =
       `<textarea id="${id}"
@@ -174,7 +185,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                  ${rows ? `rows="${rows}"` : ""}
                  ${disabled ? "disabled" : ""}
                  ${placeholder ? `placeholder="${placeholder}"` : ""}
-                 oninput="fieldChanged(this)"
+                 oninput="${jsFunction}"
                  data-setting data-setting-preview >${value || ""}</textarea>`;
 
     return this.wrapHTMLField(field, htmlTextarea);
@@ -185,11 +196,11 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const value = this.getInitialValue(field, data);
     const disabled = !this.isFieldEnabled(field, data);
     const options = this.getFieldOptions(field, data);
-
+    // TODO um... how to handle radio group for overriding javascript??
     const renderer = this;
     const htmlInputs = options?.map(
       function (option: any) {
-        const checked: boolean = value ? (value === option) : false;
+        const checked: boolean = value !== undefined ? (value === option) : false;
         return `<input id="${option}"
                        name="${id}"
                        type="radio"
@@ -208,12 +219,13 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const value = this.getInitialValue(field, data);
     const disabled = !this.isFieldEnabled(field, data);
     const htmlOptions = this.generateHTMLOptions(field, data);
+    const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
 
     const htmlSelect =
       `<select id="${id}"
                name="${id}"
                ${disabled ? "disabled" : ""}
-               oninput="fieldChanged(this)"
+               oninput="${jsFunction}"
                data-setting >
                ${htmlOptions}
        </select>`;
@@ -232,6 +244,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
     const htmlOptions = this.generateHTMLOptions(field, data);
+    const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
 
     const listId = `${id}InternalList`;
     const htmlcombo =
@@ -239,10 +252,10 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               name="${id}"
               type="text"
               list="${listId}"
-              ${value ? `value="${value}"` : ""}
+              ${value !== undefined ? `value="${value}"` : ""}
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
-              oninput="fieldChanged(this)" >
+              oninput="${jsFunction}" >
        <datalist id="${listId}">
         ${htmlOptions}
        </datalist>`;
@@ -256,14 +269,16 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
     const options = field.dialogOptions ? JSON.stringify(field.dialogOptions).replace(/"/g, "'") : undefined;
+    const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
+
     const htmlInput =
       `<input id="${id}"
               name="${id}"
               type="text"
-              ${value ? `value="${value}"` : ""}
+              ${value !== undefined ? `value="${value}"` : ""}
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
-              oninput="fieldChanged(this)"
+              oninput="${jsFunction}"
               data-setting data-setting-preview >
        ${createButton(undefined, `openFileDialog('${id}'${options ? `, ${options}` : ""})`, !disabled, "Browse...")}`;
 
@@ -291,7 +306,16 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
   }
 
   isFieldEnabled(oneField: WizardPageFieldDefinition, data: any): boolean {
+    let state: FieldDefinitionState | undefined = this.stateMap.get(oneField.id);
+    if( state !== undefined && state.hasOwnProperty("enabled")) {
+      return state.enabled == undefined ? true : state.enabled;
+    }
     return (oneField.properties && oneField.properties.disabled ? false : true);
+  }
+
+  isFieldVisible(oneField: WizardPageFieldDefinition, data: any): boolean {
+    let state: FieldDefinitionState | undefined = this.stateMap.get(oneField.id);
+    return state === undefined ? true : state.visible === undefined ? true : state.visible;
   }
 
   getInitialValue(oneField: WizardPageFieldDefinition, data: any): string | undefined {
@@ -299,6 +323,13 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
       return data && data.has(oneField.id) ? data.get(oneField.id) : oneField.initialValue;
     }
     return data && data.hasOwnProperty(oneField.id) ? data[oneField.id] : oneField.initialValue;
+  }
+
+  getOnModificationJavascript(oneField: WizardPageFieldDefinition, defaultScript: string): string | undefined {
+    if( oneField.executableJavascriptOnModification ) {
+      return oneField.executableJavascriptOnModification;
+    }
+    return defaultScript;
   }
 
   getFieldPlaceHolder(field: WizardPageFieldDefinition) {
@@ -353,7 +384,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
       function (option: any) {
         const optionValue = optionLabelProvider && optionLabelProvider.getValueItem ? optionLabelProvider.getValueItem(option) : undefined;
         const optionLabel = optionLabelProvider ? optionLabelProvider.getLabelItem(option) : option;
-        const selected: boolean = value ? (optionValue ? value === optionValue : value === optionLabel) : false;
+        const selected: boolean = value !== undefined ? (optionValue ? value === optionValue : value === optionLabel) : false;
         return `<option${optionValue ? ` value="${optionValue}"` : ""}${selected ? " selected" : ""}>${optionLabel}</option>`;
       }).join("");
 

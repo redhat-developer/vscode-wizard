@@ -1,18 +1,39 @@
 import { IWizardPage } from './IWizardPage';
 import { WizardPage } from './WizardPage';
-import { WizardPageDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, ValidatorResponse, SEVERITY } from './WebviewWizard';
+import { WizardPageDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, ValidatorResponse, SEVERITY, FieldDefinitionState } from './WebviewWizard';
 import { Template } from './pageImpl';
 import { StandardWizardPageRenderer } from './StandardWizardPageRenderer';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
-import { WizardDefinition, WizardPageFieldDefinition } from '.';
+import { WizardDefinition, WizardPageFieldDefinition, WizardPageSectionDefinition } from '.';
 export class WebviewWizardPage extends WizardPage implements IWizardPage {
     pageDefinition:WizardPageDefinition;
     wizardDefinition:WizardDefinition;
+    fieldStateCache: Map<string,FieldDefinitionState> = new Map<string,FieldDefinitionState>();
+
     constructor(pageDefinition: WizardPageDefinition, wizardDefinition: WizardDefinition) {
         super(pageDefinition.id, pageDefinition.title, pageDefinition.description);
         this.wizardDefinition = wizardDefinition;
         this.pageDefinition = pageDefinition;
         super.setFocusedField(this.findFocusedField());
+        this.initializeStateCache();
+    }
+
+    private initializeStateCache() {
+        for( let field of this.pageDefinition.fields) {
+            if( this.isWizardPageSectionDefinition(field)) {
+                for( let childField of field.childFields) {
+                    if( childField.initialState ) {
+                        this.fieldStateCache.set(childField.id, childField.initialState);
+                    }
+                }
+            } else if( field.initialState ) {
+                this.fieldStateCache.set(field.id, field.initialState);
+            }
+        }
+    }
+
+    private isWizardPageSectionDefinition(def: WizardPageFieldDefinition | WizardPageSectionDefinition): def is WizardPageSectionDefinition {
+        return (def as any).childFields !== undefined
     }
 
     private findFocusedField() : string | undefined{
@@ -68,11 +89,22 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
 
             // If validation has returned any widgets to refresh, we should do that now
             if( resp.fieldRefresh ) {
-                for( let oneField of resp.fieldRefresh) {
-                    let def : WizardPageFieldDefinition | null = this.findFieldDefinition(oneField);
+                for (let [key, value] of resp.fieldRefresh) {
+                    let def : WizardPageFieldDefinition | null = this.findFieldDefinition(key);
+                    let currentState: FieldDefinitionState | undefined = this.fieldStateCache.get(key);
+                    if( currentState === undefined || currentState === null ) {
+                        currentState = {};
+                        this.fieldStateCache.set(key,currentState);
+                    }
+                    if( value.hasOwnProperty("enabled")) {
+                        currentState.enabled = value.enabled;
+                    }
+                    if( value.hasOwnProperty("visible")) {
+                        currentState.visible = value.visible;
+                    }
                     if( def !== null ) {
                         let str : string = this.getRenderer().oneFieldAsString(def, parameters);
-                        templates = templates.concat({id: oneField + "Field", content: str});
+                        templates = templates.concat({id: key + "Field", content: str});
                     }
                 }
             }
@@ -96,7 +128,6 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
 
         return templates;
     }
-
     findFieldDefinition(id: string) : WizardPageFieldDefinition | null {
         for( let i of this.pageDefinition.fields) {
             if( isWizardPageSectionDefinition(i)) {
@@ -125,7 +156,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         if( this.wizardDefinition && this.wizardDefinition.renderer) {
             return this.wizardDefinition.renderer;
         }
-        return new StandardWizardPageRenderer();
+        return new StandardWizardPageRenderer(this.fieldStateCache);
     }
 
     getContentAsHTML(data: any): string {
