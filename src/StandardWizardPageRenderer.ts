@@ -13,7 +13,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
       if (isWizardPageSectionDefinition(field)) {
         htmlContent += this.oneSectionAsString(field, data);
       } else if (isWizardPageFieldDefinition(field)) {
-        htmlContent += this.wrapOneFieldAsString(field.id, this.oneFieldAsString(field, data), data);
+        htmlContent += this.wrapOneFieldAsString(field, data, this.oneFieldAsString(field, data));
       }
     }
     return htmlContent;
@@ -28,7 +28,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
 
     const htmlSectionContent = childFields.map(
       function (field) {
-        return renderer.wrapOneFieldAsString(field.id, renderer.oneFieldAsString(field, data), data);
+        return renderer.wrapOneFieldAsString(field, data, renderer.oneFieldAsString(field, data));
       }
     ).join("");
 
@@ -53,10 +53,10 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
   oneFieldAsString(field: WizardPageFieldDefinition, data: any): string {
     return this.createHTMLField(field, data);
   }
-  
-  wrapOneFieldAsString(fieldId: string, contents: string, data: any): string {
-    let state : FieldDefinitionState | undefined = this.stateMap.get(fieldId);
-    if(state === undefined || !state.hasOwnProperty("enabled") || state.enabled) {
+
+  wrapOneFieldAsString(field: WizardPageFieldDefinition, data: any, contents: string): string {
+    const fieldId = field.id;
+    if (this.isFieldVisible(field, data)) {
       return this.divClassId("setting", fieldId + "Field", contents);
     }
     return this.divClassId("setting", fieldId + "Field", "");
@@ -313,8 +313,8 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     return (oneField.properties && oneField.properties.disabled ? false : true);
   }
 
-  isFieldVisible(oneField: WizardPageFieldDefinition, data: any): boolean {
-    let state: FieldDefinitionState | undefined = this.stateMap.get(oneField.id);
+  isFieldVisible(field: WizardPageFieldDefinition, data: any): boolean {
+    let state: FieldDefinitionState | undefined = this.stateMap.get(field.id);
     return state === undefined ? true : state.visible === undefined ? true : state.visible;
   }
 
