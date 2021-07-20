@@ -98,7 +98,7 @@ export class WebviewWizard extends Wizard implements IWizard {
   }
 
   private createValidationTemplates(parameters: any) {
-    const validations = this.generateValidationTemplates(parameters, this.previousParameters);
+    const validations = this.generateValidationTemplates(parameters);
     validations.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false) });
     this.previousParameters = parameters;
     return validations;
@@ -262,9 +262,15 @@ export class WebviewWizard extends Wizard implements IWizard {
       '<p id="pageDescription" class="blurb ml-0 mr-0"></p>\n' +
       '<hr />\n';
   }
-  generateValidationTemplates(parameters: any, previousParameters: any): Template[] {
+
+  generateValidationTemplates(parameters: any): Template[] {
     return this.getCurrentPage() !== null ? this.getCurrentPage()!.getValidationTemplates(parameters, this.previousParameters) : [];
   }
+
+  validateAndUpdatePageComplete(parameters: any) {
+    this.getCurrentPage()!.validateAndUpdatePageComplete(parameters, this.previousParameters);
+  }
+
   getCurrentPageName(): string | undefined {
     return (this.currentPage === null ? "" : this.currentPage.getName());
   }
@@ -329,7 +335,7 @@ export class WebviewWizard extends Wizard implements IWizard {
   getUpdatedWizardControls(parameters: any, validate: boolean): string {
     if (validate) {
       // Don't care about return value here, just want pageComplete to be set
-      this.generateValidationTemplates(parameters, this.previousParameters);
+      this.validateAndUpdatePageComplete(parameters);
     }
     let hasPrevious = (this.currentPage !== null &&
       this.getActualPreviousPage(this.currentPage) !== null);
@@ -408,7 +414,7 @@ export interface ValidatorResponseItem {
 
 export interface ValidatorResponse {
   items: ValidatorResponseItem[],
-  fieldRefresh?: Map<string,FieldDefinitionState>;
+  fieldRefresh?: Map<string, FieldDefinitionState>;
 }
 
 export interface WizardDefinition {
