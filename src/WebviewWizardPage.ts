@@ -47,24 +47,73 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         return this.pageDefinition;
     }
 
+    /**
+     * Validate the wizard page by updating the page complete flag only.
+     *
+     * @param parameters the current parameters.
+     * @param previousParameters the previous parameters.
+     */
+    validateAndUpdatePageComplete(parameters: any, previousParameters: any): void {
+      const hasError = this.getValidationStatus(parameters, previousParameters);
+      this.setPageComplete(!hasError);
+    }
+
+    private getValidationStatus(parameters: any, previousParameters: any) : boolean {
+      const resp = this.doValidate(parameters, previousParameters);
+      return (resp && resp.items && resp.items.some(item => item.severity === SEVERITY.ERROR)) || false;
+    }
+
+    private doValidate(parameters: any, previousParameters: any) : ValidatorResponse | undefined {
+      if (this.pageDefinition.validator) {
+        return this.pageDefinition.validator.call(null, parameters, previousParameters);
+      }
+    }
+
+    /**
+     * Validate the wizard page by updating the page complete flag and collect HTML content to update (as Template) for :
+     *  - validation messages.
+     *  - widget to redraw according a state (not enabled, not visible, etc)
+     *
+     * @param parameters the current parameters.
+     * @param previousParameters the previous parameters.
+     *
+     * @returns Template collection
+     */
     getValidationTemplates(parameters:any, previousParameters: any) : Template[] {
         this.setPageComplete(true);
         return this.validate(parameters, previousParameters);
     }
 
-    severityToImage(sev: SEVERITY): string {
-        if( sev === SEVERITY.ERROR)
-            return"<i class=\"icon icon__error\"></i>";
-        if( sev === SEVERITY.WARN)
-            return"<i class=\"icon icon__warn\"></i>";
-        if( sev === SEVERITY.INFO)
-            return"<i class=\"icon icon__info\"></i>";
-        return "";
+    private severityToImage(severity: SEVERITY): string {
+      switch (severity) {
+        case SEVERITY.ERROR:
+          return '<i class="icon icon__error"></i>';
+        case SEVERITY.WARN:
+          return '<i class="icon icon__warn"></i>';
+        case SEVERITY.INFO:
+          return '<i class="icon icon__info"></i>';
+        default:
+          return "";
+      }
     }
-    validate(parameters: any, previousParameters: any): Template[] {
+
+    private severityToCSSClass(severity: SEVERITY): string {
+      switch (severity) {
+        case SEVERITY.ERROR:
+          return 'error-message';
+        case SEVERITY.WARN:
+          return 'warn-message';
+        case SEVERITY.INFO:
+          return 'info-message';
+        default:
+          return "";
+      }
+    }
+
+    private validate(parameters: any, previousParameters: any): Template[] {
         let templates: Template[] = [];
-        if( this.pageDefinition.validator ) {
-            let resp: ValidatorResponse = this.pageDefinition.validator.call(null, parameters, previousParameters);
+        const resp = this.doValidate(parameters, previousParameters);
+        if (resp) {
 
             // If validation has returned any widgets to refresh, we should do that now
             if( resp.fieldRefresh ) {
@@ -75,39 +124,35 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
                       currentState = {};
                       this.fieldStateCache.set(key,currentState);
                   }
-                  if( value.hasOwnProperty("enabled")) {
-                      currentState.enabled = value.enabled;
+                  let stateChanged = false;
+                  if (value.hasOwnProperty("enabled")) {
+                    stateChanged = currentState.enabled !== value.enabled;
+                    currentState.enabled = value.enabled;
                   }
-                  if( value.hasOwnProperty("visible")) {
-                      currentState.visible = value.visible;
+                  if (value.hasOwnProperty("visible")) {
+                    stateChanged = stateChanged || currentState.visible !== value.visible;
+                    currentState.visible = value.visible;
                   }
-                  if( def !== null ) {
-                      let str : string = this.getRenderer().oneFieldAsString(def, parameters);
-                      templates = templates.concat({id: key + "Field", content: str});
+                  if (def !== null && stateChanged) {
+                    let str: string = this.getRenderer().oneFieldAsString(def, parameters);
+                    templates = templates.concat({ id: key + "Field", content: str });
                   }
               }
             }
 
-            for( let oneItem of resp.items ) {
-                // Allow users to just put the failed field id here. We add Validation
-                if( !oneItem.template.id.endsWith("Validation")) {
-                    oneItem.template.id = oneItem.template.id + "Validation";
-                }
-                if( oneItem.severity === SEVERITY.ERROR ) {
-                    this.setPageComplete(false);
-                }
-                let img: string = this.severityToImage(oneItem.severity);
-                let clazz = "";
-                if( oneItem.severity == SEVERITY.ERROR)
-                    clazz = "error-message";
-                else if( oneItem.severity == SEVERITY.WARN)
-                    clazz = "warn-message";
-                else
-                    clazz = "info-message";
-
-                let inner = img + (oneItem.template.content ? oneItem.template.content : "&nbsp;");
-                oneItem.template.content = "<div class=\"" + clazz + "\">" + inner + "</div>";
-                templates = templates.concat(oneItem.template);
+            for( let item of resp.items ) {
+              const {severity, template} = item;
+              // Allow users to just put the failed field id here. We add Validation
+              if (!template.id.endsWith("Validation")) {
+                template.id = template.id + "Validation";
+              }
+              if (severity === SEVERITY.ERROR) {
+                this.setPageComplete(false);
+              }
+              const img: string = this.severityToImage(severity);
+              const cssClass = this.severityToCSSClass(severity);
+              template.content = `<div class="${cssClass}">${img}${template.content || "&nbsp;"}</div>`;
+              templates = templates.concat(template);
             }
         }
 
@@ -129,6 +174,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
 
         return templates;
     }
+
     findFieldDefinition(id: string) : WizardPageFieldDefinition | null {
         for( let i of this.pageDefinition.fields) {
             if( isWizardPageSectionDefinition(i)) {
