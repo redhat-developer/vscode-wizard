@@ -323,7 +323,6 @@ export class WebviewWizard extends Wizard implements IWizard {
     for (let d of this.definition.pages) {
       let page: WebviewWizardPage = new WebviewWizardPage(d, this.definition);
       page.setWizard(this);
-      page.validate({}, {});
       this.addPage(page);
     }
   }
@@ -456,7 +455,7 @@ export interface WizardPageFieldDefinition {
   initialValue?: string;
   placeholder?: string,
   // focus:  true if the field must got the focus and false otherwise.
-  focus?: boolean, 
+  focus?: boolean,
   // executableJavascriptOnModification:  this name is intentionally long so as to avoid confusion
   executableJavascriptOnModification?: string;
   properties?: any;
