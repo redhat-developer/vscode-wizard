@@ -106,12 +106,19 @@ input[type='text'],
 input[type='password'],
 input:not([type]),
 textarea {
-    background: none;
     color: var(--color-foreground);
     margin: 0 10px;
     max-width: 300px;
     padding: 4px;
     width: 100%;
+}
+
+input[type='number']:not([disabled]),
+input[type='text']:not([disabled]),
+input[type='password']:not([disabled]),
+input:not([type]):not([disabled]),
+textarea:not([disabled]) {
+    background: none;
 }
 
 .vscode-dark input[type='number'],
