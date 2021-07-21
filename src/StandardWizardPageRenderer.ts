@@ -104,7 +104,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               oninput="${jsFunction}"
               data-setting data-setting-preview >`;
 
-    return this.wrapHTMLField(field, htmlInput);
+    return this.wrapHTMLField(field, disabled, htmlInput);
   }
 
   numberAsHTML(field: WizardPageFieldDefinition, data: any): string {
@@ -124,7 +124,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               oninput="${jsFunction}"
               data-setting data-setting-preview >`;
 
-    return this.wrapHTMLField(field, htmlInput);
+    return this.wrapHTMLField(field, disabled, htmlInput);
   }
 
   passwordAsHTML(field: WizardPageFieldDefinition, data: any): string {
@@ -144,7 +144,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               oninput="${jsFunction}"
               data-setting data-setting-preview >`;
 
-    return this.wrapHTMLField(field, htmlInput);
+    return this.wrapHTMLField(field, disabled, htmlInput);
   }
 
   checkBoxAsHTML(field: WizardPageFieldDefinition, data: any): string {
@@ -166,7 +166,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               ${checked ? "checked" : ""}
               data-setting data-setting-preview >`;
 
-    return this.wrapHTMLField(field, htmlInput, true, true);
+    return this.wrapHTMLField(field, disabled, htmlInput, true, true);
   }
 
   textAreaAsHTML(field: WizardPageFieldDefinition, data: any): string {
@@ -188,7 +188,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                  oninput="${jsFunction}"
                  data-setting data-setting-preview >${value || ""}</textarea>`;
 
-    return this.wrapHTMLField(field, htmlTextarea);
+    return this.wrapHTMLField(field, disabled, htmlTextarea);
   }
 
   radioGroupAsHTML(field: WizardPageFieldDefinition, data: any): string {
@@ -211,7 +211,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
       }).join("");
 
     const htmlInputsContainer = this.divClass("select-container", htmlInputs);
-    return this.wrapHTMLField(field, htmlInputsContainer);
+    return this.wrapHTMLField(field, disabled, htmlInputsContainer);
   }
 
   selectAsHTML(field: WizardPageFieldDefinition, data: any): string {
@@ -231,7 +231,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
        </select>`;
 
     const selectContainer = this.divClass("select-container", htmlSelect);
-    return this.wrapHTMLField(field, selectContainer);
+    return this.wrapHTMLField(field, disabled, selectContainer);
   }
 
   comboAsHTML(field: WizardPageFieldDefinition, data: any): string {
@@ -260,7 +260,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
         ${htmlOptions}
        </datalist>`;
 
-    return this.wrapHTMLField(field, htmlcombo);
+    return this.wrapHTMLField(field, disabled, htmlcombo);
   }
 
   filePickerAsHTML(field: WizardPageFieldDefinition, data: any): string {
@@ -282,7 +282,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               data-setting data-setting-preview >
        ${createButton(undefined, `openFileDialog('${id}'${options ? `, ${options}` : ""})`, !disabled, "Browse...")}`;
 
-    return this.wrapHTMLField(field, htmlInput);
+    return this.wrapHTMLField(field, disabled, htmlInput);
   }
 
   validationDiv(id: string): string {
@@ -297,8 +297,8 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     return `<label for="${fieldId}">${labelVal}</label>`;
   }
 
-  divClass(classname: string, inner: string): string {
-    return `<div class="${classname}">${inner}</div>`;
+  divClass(classname: string, inner: string, disabled = false): string {
+    return `<div class="${classname}"${disabled ? " disabled" : ""}>${inner}</div>`;
   }
 
   divClassId(classname: string, id: string, inner: string): string {
@@ -353,7 +353,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     }
   }
 
-  wrapHTMLField(oneField: WizardPageFieldDefinition, fieldContent: string, labelAfterField = false, labelForNoStyle = false): string {
+  wrapHTMLField(oneField: WizardPageFieldDefinition, disabled : boolean, fieldContent: string, labelAfterField = false, labelForNoStyle = false): string {
     // Generate label
     const label = labelForNoStyle ? this.labelForNoStyle(oneField.id, oneField.label) : this.labelFor(oneField.id, oneField.label);
 
@@ -363,7 +363,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
 
     // Generate the div class which embedds the label, input and validation result
     const inner = (labelAfterField ? fieldContent + label : label + fieldContent) + validationDiv;
-    const settingInput = this.divClass("setting__input", inner);
+    const settingInput = this.divClass("setting__input", inner, disabled);
 
     // Generate the description hint area
     const description = oneField.description;

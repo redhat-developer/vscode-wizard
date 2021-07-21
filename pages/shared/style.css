@@ -106,7 +106,6 @@ input[type='text'],
 input[type='password'],
 input:not([type]),
 textarea {
-    background: none;
     color: var(--color-foreground);
     margin: 0 10px;
     max-width: 300px;
@@ -1023,8 +1022,8 @@ section h2 {
     width: 16px;
 }
 
-.setting[disabled] label {
-    color: var(--color-foreground--75);
+.setting__input[disabled] label {
+    opacity: 0.25 !important;
     cursor: default;
 }
 
