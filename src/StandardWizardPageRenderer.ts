@@ -290,7 +290,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
   }
 
   labelFor(fieldId: string, labelVal: string): string {
-    return `<label for="${fieldId}" style="display:block;text-align:left;width:125px;overflow-wrap:anywhere">${labelVal}</label>`
+    return `<label for="${fieldId}" style="display:block;text-align:left;min-width:125px;max-width:125px;overflow-wrap:anywhere">${labelVal}</label>`
   }
 
   labelForNoStyle(fieldId: string, labelVal: string): string {
