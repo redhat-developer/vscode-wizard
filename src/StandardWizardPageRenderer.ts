@@ -79,6 +79,8 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
         return this.radioGroupAsHTML(field, data);
       case "select":
         return this.selectAsHTML(field, data);
+      case "multiselect":
+        return this.multiSelectAsHTML(field, data);
       case "combo":
         return this.comboAsHTML(field, data);
       case "file-picker":
@@ -227,6 +229,26 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                ${disabled ? "disabled" : ""}
                oninput="${jsFunction}"
                data-setting >
+               ${htmlOptions}
+       </select>`;
+
+    const selectContainer = this.divClass("select-container", htmlSelect);
+    return this.wrapHTMLField(field, disabled, selectContainer);
+  }
+
+
+  multiSelectAsHTML(field: WizardPageFieldDefinition, data: any): string {
+    const id = field.id;
+    const disabled = !this.isFieldEnabled(field, data);
+    const htmlOptions = this.generateHTMLMultiOptions(field, data);
+    const jsFunction = this.getOnModificationJavascript(field, 'fieldChanged(this,Array.apply(null, this.options).filter(o => o.selected).map(o => o.value).join(`\n`))');
+
+    const htmlSelect =
+      `<select id="${id}"
+               name="${id}"
+               ${disabled ? "disabled" : ""}
+               oninput="${jsFunction}"
+               data-setting multiple>
                ${htmlOptions}
        </select>`;
 
@@ -385,6 +407,27 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
         const optionValue = optionLabelProvider && optionLabelProvider.getValueItem ? optionLabelProvider.getValueItem(option) : undefined;
         const optionLabel = optionLabelProvider ? optionLabelProvider.getLabelItem(option) : option;
         const selected: boolean = value !== undefined ? (optionValue ? value === optionValue : value === optionLabel) : false;
+        return `<option${optionValue ? ` value="${optionValue}"` : ""}${selected ? " selected" : ""}>${optionLabel}</option>`;
+      }).join("");
+
+    return htmlOptions;
+  }
+
+  generateHTMLMultiOptions(field: WizardPageFieldDefinition, data: any): string {
+    const v1 = this.getInitialValue(field, data);
+    let values : string[] = [];
+    if( v1 !== undefined ) {
+      values = v1.split("\n");
+    }
+
+    const optionLabelProvider = this.getFieldOptionLabelProvider(field);
+    const options = this.getFieldOptions(field, data);
+
+    const htmlOptions = options?.map(
+      function (option: any) {
+        const optionValue = optionLabelProvider && optionLabelProvider.getValueItem ? optionLabelProvider.getValueItem(option) : undefined;
+        const optionLabel = optionLabelProvider ? optionLabelProvider.getLabelItem(option) : option;
+        const selected: boolean = optionValue ? values?.includes(optionValue) : values?.includes(optionLabel);
         return `<option${optionValue ? ` value="${optionValue}"` : ""}${selected ? " selected" : ""}>${optionLabel}</option>`;
       }).join("");
 
