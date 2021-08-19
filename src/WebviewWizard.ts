@@ -44,7 +44,7 @@ export class WebviewWizard extends Wizard implements IWizard {
       handler: async (parameters: any) => {
         // Get templates for the first page content and validation result
         const templates = this.getShowCurrentPageTemplates(parameters);
-        templates.push(...this.createValidationTemplates(parameters));
+        templates.push(...await this.createValidationTemplates(parameters));
         return {
           returnObject: {
             focusedField: this.currentPage?.getFocusedField()
@@ -64,7 +64,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     this.backPressedMapping = {
       command: "backPressed",
       handler: async (parameters: any) => {
-        return this.backImpl(parameters);
+        return await this.backImpl(parameters);
       }
     };
 
@@ -91,14 +91,14 @@ export class WebviewWizard extends Wizard implements IWizard {
         }
         return {
           returnObject: {},
-          templates: this.createValidationTemplates(parameters)
+          templates: await this.createValidationTemplates(parameters)
         };
       }
     };
   }
 
-  private createValidationTemplates(parameters: any) {
-    const validations = this.generateValidationTemplates(parameters);
+  private async createValidationTemplates(parameters: any) {
+    const validations = await this.generateValidationTemplates(parameters);
     validations.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false) });
     this.previousParameters = parameters;
     return validations;
@@ -141,11 +141,11 @@ export class WebviewWizard extends Wizard implements IWizard {
     return nextPage;
   }
 
-  backImpl(parameters: any): HandlerResponse {
+  async backImpl(parameters: any): Promise<HandlerResponse> {
     this.currentPage = this.getActualPreviousPage(parameters);
     // Get templates for the previous page content and validation result
     const templates = this.getShowCurrentPageTemplates(parameters);
-    templates.push(...this.createValidationTemplates(parameters));
+    templates.push(...await this.createValidationTemplates(parameters));
     return {
       returnObject: {
         focusedField: this.currentPage?.getFocusedField()
@@ -154,12 +154,12 @@ export class WebviewWizard extends Wizard implements IWizard {
     };
   }
 
-  nextImpl(parameters: any): HandlerResponse {
+  async nextImpl(parameters: any): Promise<HandlerResponse> {
     let nextPage: IWizardPage | null = this.getActualNextPage(parameters);
     this.currentPage = nextPage;
     // Get templates for the next page content and validation result
     const templates = this.getShowCurrentPageTemplates(parameters);
-    templates.push(...this.createValidationTemplates(parameters));
+    templates.push(...await this.createValidationTemplates(parameters));
     return {
       returnObject: {
         focusedField: this.currentPage?.getFocusedField()
@@ -263,7 +263,7 @@ export class WebviewWizard extends Wizard implements IWizard {
       '<hr />\n';
   }
 
-  generateValidationTemplates(parameters: any): Template[] {
+  async generateValidationTemplates(parameters: any): Promise<Template[]> {
     return this.getCurrentPage() !== null ? this.getCurrentPage()!.getValidationTemplates(parameters, this.previousParameters) : [];
   }
 
@@ -378,7 +378,7 @@ export function createButton(id: string | undefined, onclick: string | undefined
                   ${enabled ? "" : " disabled"}>${text}</button>
           `
 }
-export type WizardPageValidator = (parameters: any, previousParameters?: any) => ValidatorResponse;
+export type WizardPageValidator = (parameters: any, previousParameters?: any) => Promise<ValidatorResponse>;
 export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
 
 export interface WizardPageFieldOptionLabelProvider {

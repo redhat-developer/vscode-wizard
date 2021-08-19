@@ -6,6 +6,8 @@ import { StandardWizardPageRenderer } from './StandardWizardPageRenderer';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
 import { WizardDefinition, WizardPageFieldDefinition, WizardPageSectionDefinition } from '.';
 export class WebviewWizardPage extends WizardPage implements IWizardPage {
+
+    initializedRenderer: IWizardPageRenderer;
     pageDefinition:WizardPageDefinition;
     wizardDefinition:WizardDefinition;
     fieldStateCache: Map<string,FieldDefinitionState> = new Map<string,FieldDefinitionState>();
@@ -16,6 +18,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         this.pageDefinition = pageDefinition;
         super.setFocusedField(this.findFocusedField());
         this.initializeStateCache();
+        this.initializedRenderer = this.createRenderer();
     }
 
     private initializeStateCache() {
@@ -58,12 +61,12 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
       this.setPageComplete(!hasError);
     }
 
-    private getValidationStatus(parameters: any, previousParameters: any) : boolean {
-      const resp = this.doValidate(parameters, previousParameters);
+    private async getValidationStatus(parameters: any, previousParameters: any) : Promise<boolean> {
+      const resp = await this.doValidate(parameters, previousParameters);
       return (resp && resp.items && resp.items.some(item => item.severity === SEVERITY.ERROR)) || false;
     }
 
-    private doValidate(parameters: any, previousParameters: any) : ValidatorResponse | undefined {
+    private async doValidate(parameters: any, previousParameters: any) : Promise<ValidatorResponse | undefined> {
       if (this.pageDefinition.validator) {
         return this.pageDefinition.validator.call(null, parameters, previousParameters);
       }
@@ -79,9 +82,9 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
      *
      * @returns Template collection
      */
-    getValidationTemplates(parameters:any, previousParameters: any) : Template[] {
+    async getValidationTemplates(parameters:any, previousParameters: any) : Promise<Template[]> {
         this.setPageComplete(true);
-        return this.validate(parameters, previousParameters);
+        return await this.validate(parameters, previousParameters);
     }
 
     private severityToImage(severity: SEVERITY): string {
@@ -110,9 +113,9 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
       }
     }
 
-    private validate(parameters: any, previousParameters: any): Template[] {
+    private async validate(parameters: any, previousParameters: any): Promise<Template[]> {
         let templates: Template[] = [];
-        const resp = this.doValidate(parameters, previousParameters);
+        const resp = await this.doValidate(parameters, previousParameters);
         if (resp) {
 
             // If validation has returned any widgets to refresh, we should do that now
@@ -198,12 +201,20 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         }
         return false;
     }
-
     getRenderer(): IWizardPageRenderer {
+      if( this.initializedRenderer !== undefined ) 
+        this.initializedRenderer = this.createRenderer();
+      return this.initializedRenderer;
+    }
+    createRenderer(): IWizardPageRenderer {
+      let r : IWizardPageRenderer;
         if( this.wizardDefinition && this.wizardDefinition.renderer) {
-            return this.wizardDefinition.renderer;
+            r = this.wizardDefinition.renderer;
+        } else {
+          r = new StandardWizardPageRenderer();
         }
-        return new StandardWizardPageRenderer(this.fieldStateCache);
+        r.initialize(this.fieldStateCache);
+        return r;
     }
 
     getContentAsHTML(data: any): string {
