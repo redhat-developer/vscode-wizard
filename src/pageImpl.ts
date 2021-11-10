@@ -93,6 +93,7 @@ export function createOrShowWizardWithPaths(
   rootPath: string,
   pagePath: string
 ) {
+  const rootPathUri : vscode.Uri = vscode.Uri.file(rootPath);
   let panel = currentPanels.get(id);
   if (panel) {
     panel.reveal();
@@ -106,14 +107,13 @@ export function createOrShowWizardWithPaths(
         retainContextWhenHidden: true,
         localResourceRoots: [
           context.extensionUri,
-          vscode.Uri.joinPath(context.extensionUri, 'pages'),
+          rootPathUri
         ],
       }
     );
-    const pagesWebviewUri : vscode.Uri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'pages'));
-    const pagesWebviewUriStr = pagesWebviewUri.toString();
+    const pagesWebviewUri : vscode.Uri = panel.webview.asWebviewUri(rootPathUri);
     const contents: string = fs.readFileSync(pagePath, 'utf-8');
-    const contentsReplaced = contents.split("{{base}}").join(pagesWebviewUriStr);
+    const contentsReplaced = contents.split("{{base}}").join(pagesWebviewUri.toString());
     panel.webview.html = contentsReplaced;
     panel.webview.onDidReceiveMessage(
       createDispatch(messageMappings, id, rootPath)
