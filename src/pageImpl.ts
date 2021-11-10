@@ -61,14 +61,6 @@ export function disposeWizard(id: string) {
   }
 }
 
-export function asVSCodeResource(resource: string): vscode.Uri {
-  return vscode.Uri.file(path.join(resource, '/')).with(
-    {
-      scheme: 'vscode-resource',
-    }
-  );
-}
-
 export function createOrShowWizard(
   id: string,
   viewType: string,
@@ -105,7 +97,6 @@ export function createOrShowWizardWithPaths(
   if (panel) {
     panel.reveal();
   } else {
-    const rootStringAsVSCodeUri: vscode.Uri = asVSCodeResource(rootPath);
     panel = vscode.window.createWebviewPanel(
       viewType,
       title,
@@ -113,13 +104,17 @@ export function createOrShowWizardWithPaths(
       {
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [rootStringAsVSCodeUri],
+        localResourceRoots: [
+          context.extensionUri,
+          vscode.Uri.joinPath(context.extensionUri, 'pages'),
+        ],
       }
     );
-    const contents: string = fs
-      .readFileSync(pagePath, 'utf-8')
-      .replace('{{base}}', rootStringAsVSCodeUri.toString());
-    panel.webview.html = contents;
+    const pagesWebviewUri : vscode.Uri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'pages'));
+    const pagesWebviewUriStr = pagesWebviewUri.toString();
+    const contents: string = fs.readFileSync(pagePath, 'utf-8');
+    const contentsReplaced = contents.split("{{base}}").join(pagesWebviewUriStr);
+    panel.webview.html = contentsReplaced;
     panel.webview.onDidReceiveMessage(
       createDispatch(messageMappings, id, rootPath)
     );

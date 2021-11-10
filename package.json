@@ -1,20 +1,12 @@
 {
-  "name": "@redhat-developer/vscode-wizard",
+  "name": "vscode-wizard",
+  "displayName": "Vscode Wizard",
   "version": "0.2.19",
   "description": "Provides Wizard APIs for use in VSCode",
   "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
-  "scripts": {
-    "build": "npm run clean && npm run compile",
-    "clean": "rm -rf out || rmdir out /s /q",
-    "compile": "tsc -p ./",
-    "prepublish": "tsc -p .",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "files": [
-    "/lib",
-    "/pages"
-  ],
+  "publisher": "redhat",
+  "author": "Red Hat",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redhat-developer/vscode-wizard.git"
@@ -22,8 +14,25 @@
   "bugs": {
     "url": "https://github.com/redhat-developer/vscode-wizard/issues"
   },
-  "author": "Red Hat",
-  "license": "Apache-2.0",
+  "types": "./lib/index.d.ts",
+  "engines": {
+    "vscode": "^1.54.0"
+  },    
+  "activationEvents": [
+    "*"
+  ],
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "clean": "rm -rf out || rmdir out /s /q",
+    "compile": "tsc -p ./",
+    "prepublish": "tsc -p .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "tsc -watch -p ./"
+  },
+  "files": [
+    "/lib",
+    "/pages"
+  ],
   "devDependencies": {
     "@types/node": "^14.14.14",
     "@types/vscode": "^1.53.0",
