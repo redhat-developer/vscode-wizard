@@ -21,6 +21,14 @@
   "activationEvents": [
     "*"
   ],
+  "contributes": {
+    "commands": [
+        {
+            "command": "ext.home",
+            "title": "Show Example Page"
+        }
+    ]
+},
   "scripts": {
     "build": "npm run clean && npm run compile",
     "clean": "rm -rf out || rmdir out /s /q",
