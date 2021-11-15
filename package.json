@@ -1,5 +1,5 @@
 {
-  "name": "vscode-wizard",
+  "name": "@redhat-developer/vscode-wizard",
   "displayName": "Vscode Wizard",
   "version": "0.2.20",
   "description": "Provides Wizard APIs for use in VSCode",
@@ -17,7 +17,7 @@
   "types": "./lib/index.d.ts",
   "engines": {
     "vscode": "^1.54.0"
-  },    
+  },
   "activationEvents": [
     "*"
   ],
