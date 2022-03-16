@@ -203,15 +203,16 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const htmlInputs = options?.map(
       function (option: any) {
         const checked: boolean = value !== undefined ? (value === option) : false;
-        return `<input id="${option}"
+        const r = `<input id="${option}"
                        name="${id}"
                        type="radio"
                        ${disabled ? "disabled" : ""}
-                       oninput="fieldChanged(this, '${option}')"
-                       ${checked ? "checked" : ""}>
-                       ${renderer.labelForNoStyle(option, option)} >`;
-      }).join("");
-
+                       oninput="fieldChangedKeyVal('${id}', '${option}')"
+                       ${checked ? "checked" : ""} >
+                       ${renderer.labelForInlineStyle(option, "padding-right: 10px;", option)}`;
+        return r;
+      }).join("\n");
+      console.log("\n\nAll together:\n" + htmlInputs);
     const htmlInputsContainer = this.divClass("select-container", htmlInputs);
     return this.wrapHTMLField(field, disabled, htmlInputsContainer);
   }
@@ -317,6 +318,10 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
 
   labelForNoStyle(fieldId: string, labelVal: string): string {
     return `<label for="${fieldId}">${labelVal}</label>`;
+  }
+
+  labelForInlineStyle(fieldId: string, style: string, labelVal: string): string {
+    return `<label for="${fieldId}" style="${style}">${labelVal}</label>`;
   }
 
   divClass(classname: string, inner: string, disabled = false): string {
