@@ -59,6 +59,12 @@ function fieldChanged(elt, val) {
   postCommandWithMap("validate");
 }
 
+
+function fieldChangedKeyVal(key, val) {
+  wizardMap.set(key, val);
+  postCommandWithMap("validate");
+}
+
 function nextPressed() {
   // Open the next page
   postCommandWithMap("nextPressed");
