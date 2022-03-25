@@ -15,7 +15,7 @@ class ListComboCallback implements ListComboGenerationCallback {
     const valueStr = value ? ` data-value="${value}"` : "";
     const onClick = `selectComboElement('${listId}', this)`;
     const onmouseover=`onmouseover="highlightComboElement('${listId}', this)" `;
-    return `<li class="li-style" data-display="true" onclick="${onClick}" ${onmouseover} ${valueStr}>${label}</li>`;
+    return `<li class="li-style" data-display="false" onclick="${onClick}" ${onmouseover} ${valueStr}>${label}</li>`;
   }
 }
 export class StandardWizardPageRenderer implements IWizardPageRenderer {
@@ -284,7 +284,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const htmlOptions = this.generateHTMLOptions(field, data, new ListComboCallback());
     const jsFunction = this.getOnModificationJavascript(field, `comboFieldChanged('${id}')`);
     const onload = `initComboField('${id}')`;
-    const htmlcombo =`<ul class="ul-color select-list-group" id="${id}_listgroup">
+    const htmlcombo =`<ul class="ul-color ul-size select-list-group" id="${id}_listgroup">
     <li class="li-style">
         <input type="text" 
                 id="${id}" 
@@ -294,7 +294,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                 data-onload="${onload}"
                 placeholder="${placeholder || ""}" 
                 oninput="${jsFunction}"/>
-        <ul class="ul-color ul-position" data-toggle="true" id="${id}_innerUL">
+        <ul class="ul-color ul-position" data-toggle="false" id="${id}_innerUL">
           ${htmlOptions}
         </ul>
      </li>
