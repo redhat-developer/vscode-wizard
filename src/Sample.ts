@@ -264,6 +264,11 @@ export function getSinglePageAllControlsDefinition(context: vscode.ExtensionCont
             validator: (parameters:any) => {
                 let items : ValidatorResponseItem[] = [];
                 const username = parameters.addusername;
+                const religion = parameters.religion;
+                if( religion && typeof religion === 'string' && (religion as string).startsWith("satan")) {
+                    items.push(createValidationItem(SEVERITY.ERROR, "religion", 
+                    "No Satanists allowed!"));
+                }
                 if( username === 'Max') {
                     items.push(createValidationItem(SEVERITY.ERROR, "addusername", 
                     "Max is not allowed to use this wizard. Sorry Max!"));
