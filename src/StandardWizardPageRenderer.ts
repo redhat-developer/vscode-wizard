@@ -2,6 +2,22 @@ import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefin
 import { IWizardPageRenderer } from './IWizardPageRenderer';
 import { WizardPageFieldOptionProvider } from '.';
 
+interface ListComboGenerationCallback {
+  generate(listId: string, value: string, label: string, selected: boolean): string;
+}
+class SelectComboCallback implements ListComboGenerationCallback {
+  generate(_listId: string, value: string, label: string, selected: boolean): string {
+    return `<option${value ? ` value="${value}"` : ""}${selected ? " selected" : ""}>${label}</option>`;
+  }
+}
+class ListComboCallback implements ListComboGenerationCallback {
+  generate(listId: string, value: string, label: string, selected: boolean): string {
+    const valueStr = value ? ` data-value="${value}"` : "";
+    const onClick = `selectComboElement('${listId}', this)`;
+    const onmouseover=`onmouseover="highlightComboElement('${listId}', this)" `;
+    return `<li class="li-style" data-display="false" onclick="${onClick}" ${onmouseover} ${valueStr}>${label}</li>`;
+  }
+}
 export class StandardWizardPageRenderer implements IWizardPageRenderer {
   private stateMap: Map<string,FieldDefinitionState>;
   constructor(state: Map<string,FieldDefinitionState>) {
@@ -212,7 +228,6 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                        ${renderer.labelForInlineStyle(option, "padding-right: 10px;", option)}`;
         return r;
       }).join("\n");
-      console.log("\n\nAll together:\n" + htmlInputs);
     const htmlInputsContainer = this.divClass("select-container", htmlInputs);
     return this.wrapHTMLField(field, disabled, htmlInputsContainer);
   }
@@ -221,7 +236,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const id = field.id;
     const value = this.getInitialValue(field, data);
     const disabled = !this.isFieldEnabled(field, data);
-    const htmlOptions = this.generateHTMLOptions(field, data);
+    const htmlOptions = this.generateHTMLOptions(field, data, new SelectComboCallback());
     const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
 
     const htmlSelect =
@@ -266,23 +281,24 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const value = this.getInitialValue(field, data);
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
-    const htmlOptions = this.generateHTMLOptions(field, data);
-    const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
-
-    const listId = `${id}InternalList`;
-    const htmlcombo =
-      `<input id="${id}"
-              name="${id}"
-              type="text"
-              list="${listId}"
-              ${value !== undefined ? `value="${value}"` : ""}
-              ${disabled ? "disabled" : ""}
-              ${placeholder ? `placeholder="${placeholder}"` : ""}
-              oninput="${jsFunction}" >
-       <datalist id="${listId}">
-        ${htmlOptions}
-       </datalist>`;
-
+    const htmlOptions = this.generateHTMLOptions(field, data, new ListComboCallback());
+    const jsFunction = this.getOnModificationJavascript(field, `comboFieldChanged('${id}')`);
+    const onload = `initComboField('${id}')`;
+    const htmlcombo =`<ul class="ul-color ul-size select-list-group" id="${id}_listgroup">
+    <li class="li-style">
+        <input type="text" 
+                id="${id}" 
+                name="${id}"
+                ${value !== undefined ? `value="${value}"` : ""}
+                ${disabled ? "disabled" : ""}
+                data-onload="${onload}"
+                placeholder="${placeholder || ""}" 
+                oninput="${jsFunction}"/>
+        <ul class="ul-color ul-position" data-toggle="false" id="${id}_innerUL">
+          ${htmlOptions}
+        </ul>
+     </li>
+</ul>`;
     return this.wrapHTMLField(field, disabled, htmlcombo);
   }
 
@@ -402,7 +418,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     return settingInput + hint;
   }
 
-  generateHTMLOptions(field: WizardPageFieldDefinition, data: any): string {
+  generateHTMLOptions(field: WizardPageFieldDefinition, data: any, callback: ListComboGenerationCallback): string {
     const value = this.getInitialValue(field, data);
     const optionLabelProvider = this.getFieldOptionLabelProvider(field);
     const options = this.getFieldOptions(field, data);
@@ -412,7 +428,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
         const optionValue = optionLabelProvider && optionLabelProvider.getValueItem ? optionLabelProvider.getValueItem(option) : undefined;
         const optionLabel = optionLabelProvider ? optionLabelProvider.getLabelItem(option) : option;
         const selected: boolean = value !== undefined ? (optionValue ? value === optionValue : value === optionLabel) : false;
-        return `<option${optionValue ? ` value="${optionValue}"` : ""}${selected ? " selected" : ""}>${optionLabel}</option>`;
+        return callback.generate(field.id, optionValue || "", optionLabel, selected);
       }).join("");
 
     return htmlOptions;

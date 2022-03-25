@@ -5,7 +5,11 @@ function initEventListener(fn) {
   window.addEventListener('message', event => {
     const message = event.data;
     if (message.command.match(/Response$/) && message.contents) {
+      let contentSectionModified = false;
       message.contents.forEach(content => {
+        if( content.id === 'content') {
+          contentSectionModified = true;
+        }
         let element = document.getElementById(content.id);
         if (element === null) {
           console.error(content.id + " is null");
@@ -13,6 +17,20 @@ function initEventListener(fn) {
           element.innerHTML = content.body;
         }
       });
+      if( contentSectionModified ) {
+        var onloads = document.querySelectorAll('[data-onload]');
+        for( onloadsIterator = 0; onloadsIterator < onloads.length; onloadsIterator++ ) {
+          const asId = onloads[onloadsIterator]["id"];
+          const onloadVal = findDataOnloadValue(onloads[onloadsIterator]);
+          if( onloadVal ) {
+            try {
+              eval(onloadVal);
+            } catch( error ) {
+              console.log(error);
+            }
+          }
+        }
+      }
     } else if (message.command === "openFileDialogResponse") {
       const returnObject = message.result.returnObject;
       const { fieldId, fsPath } = returnObject;
@@ -38,6 +56,14 @@ function initEventListener(fn) {
   });
 }
 
+function findDataOnloadValue(el) {
+  for (i = 0, atts = el.attributes, n = atts.length; i < n; i++){
+    if( atts[i].nodeName === "data-onload") {
+      return atts[i].nodeValue;
+    }
+  }
+}
+
 function loadWizard() {
 
   initEventListener(function (msg) {
@@ -58,7 +84,6 @@ function fieldChanged(elt, val) {
   wizardMap.set(elt.id, value);
   postCommandWithMap("validate");
 }
-
 
 function fieldChangedKeyVal(key, val) {
   wizardMap.set(key, val);
@@ -216,4 +241,161 @@ function initializeAndWatchThemeColors() {
   observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
   onColorThemeChanged();
   return observer;
+}
+
+/* Combo Functions Below */
+function comboFieldChanged(id) {
+  const comboTextField = document.getElementById(id);
+  if (comboTextField.value) {
+    comboDropDownForTags(id, comboTextField.value);
+  } else {
+    hideComboList(id);
+  }
+  fieldChangedKeyVal(id, comboTextField.value);
+}
+
+function initComboField(comboId) {
+  const comboTextField = document.getElementById(comboId);
+  comboTextField.addEventListener('keypress', (e) => {
+    if (e.code === 'Enter') {
+      selectHighlightedCombo(comboId);
+    }
+    hideComboList(comboId);
+    initComboList(comboId);
+  });
+  comboTextField.addEventListener('click', () => {
+    comboDropDownForTags(comboTextField.id, (comboTextField.value || "").trim());
+    //keyUpDown();
+  });
+  comboRegisterKeyUpDownListener(comboId);
+}
+
+function isComboListVisible(id) {
+  const group = document.getElementById(id + "_innerUL");
+  return group.getAttribute("data-toggle") === 'true';
+}
+
+function showComboList(id) {
+  const group = document.getElementById(id + "_innerUL");
+  group.setAttribute("data-toggle", 'true');
+}
+
+function selectHighlightedCombo(comboId) {
+  const group = document.getElementById(comboId + "_listgroup");
+  const listArray = group.querySelectorAll('li ul li');
+  for (let i = 0; i < listArray.length; i++) {
+    const highlighted = listArray[i].getAttribute("data-highlight");
+    if( highlighted === 'true') {
+      selectComboElement(comboId, listArray[i]);
+      return;
+    }
+  }
+}
+
+function selectComboElement(comboId, listItem) {
+  const textField = document.getElementById(comboId);
+  textField.value = listItem.innerHTML;
+  fieldChangedKeyVal(comboId, textField.value);
+  hideComboList(comboId);
+}
+
+function highlightComboElement(comboId, listItem) {
+  const group = document.getElementById(comboId + "_listgroup");
+  const listArray = group.querySelectorAll('li ul li');
+  for (let i = 0; i < listArray.length; i++) {
+    const highlighted = listItem === listArray[i];
+    listArray[i].setAttribute("data-highlight", highlighted);
+  }
+}
+
+function hideComboList(id) {
+  const group = document.getElementById(id + "_innerUL");
+  group.setAttribute("data-toggle", 'false');
+}
+
+function initComboItem(id, item) {
+  item.setAttribute("data-display", true);
+  item.setAttribute("data-highlight", false);
+}
+
+function initComboList(id) {
+  const group = document.getElementById(id + "_listgroup");
+  const listArray = group.querySelectorAll('li ul li');
+  for (let i = 0; i < listArray.length; i++) {
+    initComboItem(id, listArray[i]);
+    //listArray[i].addEventListener('click', comboCopyPasteFor(id));
+  }
+}
+
+function comboCopyPasteFor(id) {
+  return () => {
+    const taskInput = document.getElementById(id);
+    taskInput['value'] = this.innerHTML;
+    initList();
+    hideList(listGroup);
+  }
+}
+
+function comboDropDownForTags(id, val) {
+  const group = document.getElementById(id + "_listgroup");
+  const listArray = group.querySelectorAll('li ul li');
+  let firstFound = false;
+  for (let i = 0; i < listArray.length; i++) {
+    const highlighted = comboMatching(listArray[i], val.trim());
+    if( !firstFound && highlighted === 'true') {
+      listArray[i].setAttribute("data-highlight", true);
+      firstFound = true;
+    }
+  }
+  showComboList(id);
+}
+
+function comboMatching(item, input) {
+  let v = 'false';
+  if( !input || input === '' || (item && item.innerHTML && item.innerHTML.startsWith(input))) {
+    v = 'true';
+  }
+  item.setAttribute("data-display", v);
+  item.setAttribute("data-highlight", false);
+  return v;
+}
+
+function comboRegisterKeyUpDownListener(comboId) {
+  const comboTextField = document.getElementById(comboId);
+  comboTextField.onkeydown = function (e) {
+    if( e.code === 'Escape') {
+      hideComboList(comboId);
+    }
+    if (e.code !== 'ArrowUp' && e.code !== 'ArrowDown') {
+      return;
+    }
+
+    const isVisible = isComboListVisible(comboId);
+    if( !isVisible) {
+      comboDropDownForTags(comboTextField.id, (comboTextField.value || "").trim());
+      return;
+    }
+
+    const group = document.getElementById(comboId + "_listgroup");
+    const listArray = group.querySelectorAll('li ul li[data-display="true"]');
+    let selectedIndex = -1;
+    for( let i = 0; i < listArray.length; i++ ) {
+      const highlighted = listArray[i].getAttribute("data-highlight") === 'true';
+      if( highlighted ) {
+        selectedIndex = i;
+      }
+    }
+    
+    const isArrowUp = e.code === 'ArrowUp';
+    const oneUp = (selectedIndex <= 0 ? listArray.length - 1 : selectedIndex - 1);
+    const oneDown = (selectedIndex >= listArray.length - 1 ? 0 : selectedIndex + 1);
+    const newHighlight = isArrowUp ? oneUp : oneDown;
+
+    if( !isVisible ) {
+      comboDropDownForTags(comboId, document.getElementById(comboId).value);
+    }
+    for( let i = 0; i < listArray.length; i++ ) {
+      listArray[i].setAttribute("data-highlight", i === newHighlight);
+    }
+  };
 }
