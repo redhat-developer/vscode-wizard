@@ -228,7 +228,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                        ${renderer.labelForInlineStyle(option, "padding-right: 10px;", option)}`;
         return r;
       }).join("\n");
-    const htmlInputsContainer = this.divClass("select-container", htmlInputs);
+    const htmlInputsContainer = this.divClass("radio-container", htmlInputs);
     return this.wrapHTMLField(field, disabled, htmlInputsContainer);
   }
 

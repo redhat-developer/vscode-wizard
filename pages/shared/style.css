@@ -260,6 +260,12 @@ select option:focus {
     background-color: rgba(0, 0, 0, 0.2);
 }
 
+.radio-container {
+    display: inline-block;
+    position: relative;
+    margin: 0 0.75em;
+}
+
 .select-container {
     display: inline-block;
     position: relative;
