@@ -1089,8 +1089,8 @@ section h2 {
 .setting__input input:not([type]),
 .setting__input select,
 .setting__input textarea {
-    min-width: 240px;
-    max-width: 240px;
+    min-width: 324px;
+    max-width: 324px;
 }
 
 .setting__input label {
@@ -1468,8 +1468,10 @@ section h2 {
 }
 
 div.error-message {
+    position: relative;
     display: block;
     text-align: left;
+    left: 17px;
     color: var(--vscode-editorError-foreground);
 }
 
@@ -1487,35 +1489,46 @@ div.info-message {
 
 /* Styles for homemade dropdown */
 
+
 .contain-style {
 	top: 2%;
     position: relative;
 }
 
-ul.ul-color { 
-    list-style : none; 
-    padding : 0; 
-    color : var(--color-foreground);
- }
-
-ul.ul-size {
-    min-width: 260px;
-    max-width: 260px;
+li.li-style {
+    padding: .6rem .1rem;
+    margin: 0;
+    position: relative;
+    width: 312px;
 }
 
-
-li.li-style { 
-	padding :  0;
-	margin : 0;
-	position : relative;
-    min-width: 240px;
-    max-width: 240px;
-    margin-right: 20px;
+ul.ul-color {
+    width: 75%;
+    list-style: none;
+    padding: 0;
+    /* overflow-x: scroll; */
+    /* max-height: 200px; */
+    /* overflow: scroll; */
+    /* overflow: scroll; */
+    /* margin: 0px; */
+    left: -2px;
+    position: relative;
+    color: var(--vscode-foreground);
+    background-color: var(--color-background--lighten-05);
 }
 
-li.li-style li.li-style:hover { color : var(--color-foreground) }
+ul.ul-position {
+    position: absolute;
+    left: 10px;
+    max-height: 159px;
+    width: 328px;
+    overflow-y: scroll;
+    z-index: 1;
+}
 
-li.li-style li.li-style.current { color : var(--color-foreground) }
+li.li-style li.li-style:hover { color : var(--vscode-foreground); background-color : var(--vscode-input-background) }
+
+li.li-style li.li-style.current { color : var(--vscode-foreground); background-color : var(--vscode-editor-background) }
 
 .select-list-group, .select-list-group * {
 	width: 100%;
