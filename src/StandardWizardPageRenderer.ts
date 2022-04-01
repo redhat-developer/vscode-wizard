@@ -51,7 +51,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const htmlSection =
       `<section id="${id}" class="section--settings section--collapsible" >
         <div class="section__header" onclick="document.getElementById('${id}').classList.toggle('collapsed');" >
-          <h2>${label}</h2>
+          <span>${label}</span>
           ${description ? `<p class="section__header-hint">${description}</p>` : ''}
         </div>
         <div class="section__collapsible">
@@ -122,7 +122,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               oninput="${jsFunction}"
               data-setting data-setting-preview >`;
 
-    return this.wrapHTMLField(field, disabled, htmlInput);
+    return this.wrapHTMLField(field, false, htmlInput);
   }
 
   numberAsHTML(field: WizardPageFieldDefinition, data: any): string {
@@ -319,7 +319,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               ${placeholder ? `placeholder="${placeholder}"` : ""}
               oninput="${jsFunction}"
               data-setting data-setting-preview >
-       ${createButton(undefined, `openFileDialog('${id}'${options ? `, ${options}` : ""})`, !disabled, "Browse...")}`;
+       ${createButton(undefined, `openFileDialog('${id}'${options ? `, ${options}` : ""})`, !disabled, "Browse")}`;
 
     return this.wrapHTMLField(field, disabled, htmlInput);
   }

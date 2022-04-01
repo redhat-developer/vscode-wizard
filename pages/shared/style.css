@@ -857,7 +857,7 @@ section h2 {
     mask-size: 32px 40px;
     position: absolute;
     right: 0;
-    top: 0;
+    top: -8px;
     transition: transform 250ms ease-in-out;
     width: 32px;
 }
