@@ -246,7 +246,7 @@ function initializeAndWatchThemeColors() {
 /* Combo Functions Below */
 function comboFieldChanged(id) {
   const comboTextField = document.getElementById(id);
-  if (comboTextField.value) {
+  if (comboTextField.value || comboTextField.value === '') {
     comboDropDownForTags(id, comboTextField.value);
   } else {
     hideComboList(id);

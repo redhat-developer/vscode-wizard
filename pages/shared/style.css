@@ -489,13 +489,15 @@ code {
     background-color: var(--color-button-background);
     border: 1px solid var(--color-button-background);
     color: var(--color-button-foreground);
-    max-width: 100px;
+    /* max-width: 100px; */
     box-sizing: border-box;
-    width: 100%;
-    padding: 2px;
+    /* width: 100%; */
+    padding: 4px;
     text-align: center;
     cursor: pointer;
     justify-content: center;
+    padding-left: 9px;
+    padding-right: 9px;
     align-items: center;
 }
 
