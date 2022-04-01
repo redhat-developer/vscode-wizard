@@ -319,7 +319,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               ${placeholder ? `placeholder="${placeholder}"` : ""}
               oninput="${jsFunction}"
               data-setting data-setting-preview >
-       ${createButton(undefined, `openFileDialog('${id}'${options ? `, ${options}` : ""})`, !disabled, "Browse")}`;
+       ${createButton(undefined, `openFileDialog('${id}'${options ? `, ${options}` : ""})`, !disabled, "Browse...")}`;
 
     return this.wrapHTMLField(field, disabled, htmlInput);
   }
