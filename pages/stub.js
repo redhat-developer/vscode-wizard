@@ -281,6 +281,8 @@ function showComboList(id) {
 }
 
 function selectHighlightedCombo(comboId) {
+  console.log("selectHighlightedCombo");
+
   const group = document.getElementById(comboId + "_listgroup");
   const listArray = group.querySelectorAll('li ul li');
   for (let i = 0; i < listArray.length; i++) {
@@ -293,6 +295,8 @@ function selectHighlightedCombo(comboId) {
 }
 
 function selectComboElement(comboId, listItem) {
+  console.log("selectComboElement");
+
   const textField = document.getElementById(comboId);
   textField.value = listItem.innerHTML;
   fieldChangedKeyVal(comboId, textField.value);
@@ -309,16 +313,28 @@ function highlightComboElement(comboId, listItem) {
 }
 
 function hideComboList(id) {
+  console.log("hideComboList");
   const group = document.getElementById(id + "_innerUL");
   group.setAttribute("data-toggle", 'false');
 }
 
+function delayedHideComboList(id) {
+  setTimeout(
+    function() {
+      hideComboList(id);
+    }, 100);
+}
+
 function initComboItem(id, item) {
+  console.log("initComboItem");
+
   item.setAttribute("data-display", true);
   item.setAttribute("data-highlight", false);
 }
 
 function initComboList(id) {
+  console.log("initComboList");
+
   const group = document.getElementById(id + "_listgroup");
   const listArray = group.querySelectorAll('li ul li');
   for (let i = 0; i < listArray.length; i++) {

@@ -293,7 +293,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                 ${disabled ? "disabled" : ""}
                 data-onload="${onload}"
                 placeholder="${placeholder || ""}" 
-                onfocusout="hideComboList('${id}')"
+                onfocusout="delayedHideComboList('${id}')"
                 oninput="${jsFunction}"/>
         <ul class="ul-color ul-position" data-toggle="false" id="${id}_innerUL">
           ${htmlOptions}
