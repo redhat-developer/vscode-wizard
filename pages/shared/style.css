@@ -1175,7 +1175,7 @@ section h2 {
     display: block;
     font-weight: 200;
     font-size: 1.3rem;
-    margin: 0 1em 0.5em 1em;
+    margin: 0 1em 0.5em 130px;
 }
 
 .settings {
@@ -1479,7 +1479,8 @@ div.error-message {
     position: relative;
     display: block;
     text-align: left;
-    left: 17px;
+    left: 130px;
+    top: -15px;
     color: var(--vscode-editorError-foreground);
 }
 

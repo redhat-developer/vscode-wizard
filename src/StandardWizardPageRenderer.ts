@@ -225,7 +225,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                        ${disabled ? "disabled" : ""}
                        oninput="fieldChangedKeyVal('${id}', '${option}')"
                        ${checked ? "checked" : ""} >
-                       ${renderer.labelForInlineStyle(option, "padding-right: 10px;", option)}`;
+                       ${renderer.labelForInlineStyle(option, "padding-right: 10px;color:var(--color-foreground);", option)}`;
         return r;
       }).join("\n");
     const htmlInputsContainer = this.divClass("radio-container", htmlInputs);
@@ -330,11 +330,11 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
   }
 
   labelFor(fieldId: string, labelVal: string): string {
-    return `<label for="${fieldId}" style="display:block;text-align:left;min-width:125px;max-width:125px;overflow-wrap:anywhere">${labelVal}</label>`
+    return `<label for="${fieldId}" style="display:block;text-align:left;min-width:125px;max-width:125px;overflow-wrap:anywhere;color:var(--color-foreground);">${labelVal}</label>`
   }
 
   labelForNoStyle(fieldId: string, labelVal: string): string {
-    return `<label for="${fieldId}">${labelVal}</label>`;
+    return `<label for="${fieldId}" style="color:var(--color-foreground);">${labelVal}</label>`;
   }
 
   labelForInlineStyle(fieldId: string, style: string, labelVal: string): string {
@@ -399,24 +399,23 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
 
   wrapHTMLField(oneField: WizardPageFieldDefinition, disabled : boolean, fieldContent: string, labelAfterField = false, labelForNoStyle = false): string {
     // Generate label
-    const label = labelForNoStyle ? this.labelForNoStyle(oneField.id, oneField.label) : this.labelFor(oneField.id, oneField.label);
+    const label = labelForNoStyle ? this.labelForNoStyle(oneField.id, oneField.label) :  this.labelFor(oneField.id, oneField.label);
 
     // Generate validation result area
     const id = oneField.id;
     const validationDiv = this.validationDiv(id);
 
     // Generate the div class which embedds the label, input and validation result
-    const inner = (labelAfterField ? fieldContent + label : label + fieldContent) + validationDiv;
+    const inner = (labelAfterField ? fieldContent + label : label + fieldContent);
     const settingInput = this.divClass("setting__input", inner, disabled);
-
     // Generate the description hint area
     const description = oneField.description;
-    const hint =
+    const hint = description ? 
       `<p class="setting__hint">
         ${description || ""}
-       </p>`;
+       </p>` : "";
 
-    return settingInput + hint;
+    return settingInput +  hint + validationDiv;
   }
 
   generateHTMLOptions(field: WizardPageFieldDefinition, data: any, callback: ListComboGenerationCallback): string {
