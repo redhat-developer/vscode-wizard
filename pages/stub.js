@@ -319,10 +319,12 @@ function hideComboList(id) {
 }
 
 function delayedHideComboList(id) {
+  console.log("Calling delayedHideComboList");
   setTimeout(
     function() {
+      console.log("About to call hideComboList");
       hideComboList(id);
-    }, 100);
+    }, 250);
 }
 
 function initComboItem(id, item) {
