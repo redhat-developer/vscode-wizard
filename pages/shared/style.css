@@ -582,6 +582,7 @@ h2 .icon {
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
     background-color: var(--vscode-editorError-foreground);
+    top: 11px;
 }
 
 .icon--md {
@@ -1480,7 +1481,7 @@ div.error-message {
     display: block;
     text-align: left;
     left: 130px;
-    top: -15px;
+    top: -8px;
     color: var(--vscode-editorError-foreground);
 }
 
@@ -1519,8 +1520,8 @@ ul.ul-color {
     /* max-height: 200px; */
     /* overflow: scroll; */
     /* overflow: scroll; */
-    /* margin: 0px; */
-    left: -2px;
+    margin: -5px;
+    left: 4px;
     position: relative;
     color: var(--vscode-foreground);
     background-color: var(--color-background--lighten-05);

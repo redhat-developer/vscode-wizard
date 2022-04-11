@@ -51,7 +51,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const htmlSection =
       `<section id="${id}" class="section--settings section--collapsible" >
         <div class="section__header" onclick="document.getElementById('${id}').classList.toggle('collapsed');" >
-          <h2>${label}</h2>
+          <span>${label}</span>
           ${description ? `<p class="section__header-hint">${description}</p>` : ''}
         </div>
         <div class="section__collapsible">
