@@ -1521,22 +1521,22 @@ span.text-size {
 }
 
 li.li-style {
-    padding: .6rem .1rem;
+    padding: .1rem .1rem;
     margin: 0;
     position: relative;
     width: 345px;
 }
 
 ul.ul-color {
-    width: 75%;
+    width: 72%;
     list-style: none;
     padding: 0;
     /* overflow-x: scroll; */
     /* max-height: 200px; */
     /* overflow: scroll; */
     /* overflow: scroll; */
-    margin: -5px;
-    left: 4px;
+    /* margin: 0px; */
+    left: -2px;
     position: relative;
     color: var(--vscode-foreground);
 }
@@ -1553,7 +1553,7 @@ ul.ul-position {
     position: absolute;
     left: 10px;
     max-height: 159px;
-    width: 328px;
+    width: 335px;
     overflow-y: scroll;
     z-index: 1;
 }
