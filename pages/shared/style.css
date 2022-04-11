@@ -1497,6 +1497,10 @@ div.info-message {
     color: var(--vscode-editorInfo-foreground);
 }
 
+span.text-size {
+    font-size: 15px;
+}
+
 /* Styles for homemade dropdown */
 
 
