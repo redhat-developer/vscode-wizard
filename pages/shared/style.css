@@ -1098,7 +1098,6 @@ section h2 {
 .setting__input input[type='password']:not([data-setting-in-section]),
 .setting__input input[type='number']:not([data-setting-in-section]),
 .setting__input input:not([type]):not([data-setting-in-section]),
-.setting__input select:not([data-setting-in-section]),
 .setting__input textarea:not([data-setting-in-section]) {
     min-width: 324px;
     max-width: 324px;
@@ -1108,7 +1107,6 @@ section h2 {
 .setting__input input[type='password'][data-setting-in-section='true'],
 .setting__input input[type='number'][data-setting-in-section='true'],
 .setting__input input:not([type])[data-setting-in-section='true'],
-.setting__input select[data-setting-in-section='true'],
 .setting__input textarea[data-setting-in-section='true'] {
     min-width: 286px;
     max-width: 286px;
@@ -1521,22 +1519,22 @@ span.text-size {
 }
 
 li.li-style {
-    padding: .1rem .1rem;
+    padding: .6rem .1rem;
     margin: 0;
     position: relative;
     width: 345px;
 }
 
 ul.ul-color {
-    width: 72%;
+    width: 75%;
     list-style: none;
     padding: 0;
     /* overflow-x: scroll; */
     /* max-height: 200px; */
     /* overflow: scroll; */
     /* overflow: scroll; */
-    /* margin: 0px; */
-    left: -2px;
+    margin: -5px;
+    left: 4px;
     position: relative;
     color: var(--vscode-foreground);
 }
@@ -1551,9 +1549,9 @@ ul.ul-color {
 
 ul.ul-position {
     position: absolute;
-    left: 10px;
+    left: 16px;
     max-height: 159px;
-    width: 335px;
+    width: 324px;
     overflow-y: scroll;
     z-index: 1;
 }
