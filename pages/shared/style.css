@@ -838,6 +838,7 @@ section h2 {
     border-radius: 6px;
     margin: 1em;
     padding: 1em;
+    max-width: 550px;
 }
 
 .vscode-dark .section--settings {
@@ -1092,16 +1093,25 @@ section h2 {
     margin-left: 0;
 }
 
-.setting__input input[type='text'],
-.setting__input input[type='password'],
-.setting__input input[type='number'],
-.setting__input input:not([type]),
-.setting__input select,
-.setting__input textarea {
+.setting__input input[type='text']:not([data-setting-in-section]),
+.setting__input input[type='password']:not([data-setting-in-section]),
+.setting__input input[type='number']:not([data-setting-in-section]),
+.setting__input input:not([type]):not([data-setting-in-section]),
+.setting__input select:not([data-setting-in-section]),
+.setting__input textarea:not([data-setting-in-section]) {
     min-width: 324px;
     max-width: 324px;
 }
 
+.setting__input input[type='text'][data-setting-in-section='true'],
+.setting__input input[type='password'][data-setting-in-section='true'],
+.setting__input input[type='number'][data-setting-in-section='true'],
+.setting__input input:not([type])[data-setting-in-section='true'],
+.setting__input select[data-setting-in-section='true'],
+.setting__input textarea[data-setting-in-section='true'] {
+    min-width: 286px;
+    max-width: 286px;
+}
 .setting__input label {
     flex-grow: 0;
 }
@@ -1513,7 +1523,7 @@ li.li-style {
     padding: .6rem .1rem;
     margin: 0;
     position: relative;
-    width: 312px;
+    width: 345px;
 }
 
 ul.ul-color {
@@ -1528,6 +1538,13 @@ ul.ul-color {
     left: 4px;
     position: relative;
     color: var(--vscode-foreground);
+}
+
+.vscode-light ul.ul-color {
+    background-color: var(--color-background);
+}
+
+.vscode-dark ul.ul-color {
     background-color: var(--color-background--lighten-05);
 }
 
@@ -1540,7 +1557,7 @@ ul.ul-position {
     z-index: 1;
 }
 
-li.li-style li.li-style:hover { color : var(--vscode-foreground); background-color : var(--vscode-input-background) }
+li.li-style li.li-style:hover { color : var(--vscode-foreground); }
 
 li.li-style li.li-style.current { color : var(--vscode-foreground); background-color : var(--vscode-editor-background) }
 

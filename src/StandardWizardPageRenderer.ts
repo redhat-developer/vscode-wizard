@@ -2,6 +2,8 @@ import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefin
 import { IWizardPageRenderer } from './IWizardPageRenderer';
 import { WizardPageFieldOptionProvider } from '.';
 
+export const DATA_PROPERTY_INSIDE_SECTION = "vscode-wizard.section.inside";
+
 interface ListComboGenerationCallback {
   generate(listId: string, value: string, label: string, selected: boolean): string;
 }
@@ -42,9 +44,11 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const childFields = section.childFields;
     const renderer = this;
 
+    const clonedData = JSON.parse(JSON.stringify(data));
+    clonedData[DATA_PROPERTY_INSIDE_SECTION] = true;
     const htmlSectionContent = childFields.map(
       function (field) {
-        return renderer.wrapOneFieldAsString(field, data, renderer.oneFieldAsString(field, data));
+        return renderer.wrapOneFieldAsString(field, data, renderer.oneFieldAsString(field, clonedData));
       }
     ).join("");
 
@@ -112,6 +116,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
     const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
+    const dataSettingInSection = (data[DATA_PROPERTY_INSIDE_SECTION] === true ? " data-setting-in-section=\"true\"" : "");
     const htmlInput =
       `<input id="${id}"
               name="${id}"
@@ -120,7 +125,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
               oninput="${jsFunction}"
-              data-setting data-setting-preview >`;
+              data-setting data-setting-preview ${dataSettingInSection} >`;
 
     return this.wrapHTMLField(field, disabled, htmlInput);
   }
@@ -131,6 +136,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
     const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
+    const dataSettingInSection = (data[DATA_PROPERTY_INSIDE_SECTION] === true ? " data-setting-in-section=\"true\"" : "");
 
     const htmlInput =
       `<input id="${id}"
@@ -140,7 +146,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
               oninput="${jsFunction}"
-              data-setting data-setting-preview >`;
+              data-setting data-setting-preview ${dataSettingInSection}>`;
 
     return this.wrapHTMLField(field, disabled, htmlInput);
   }
@@ -151,6 +157,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const disabled = !this.isFieldEnabled(field, data);
     const placeholder = this.getFieldPlaceHolder(field);
     const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
+    const dataSettingInSection = (data[DATA_PROPERTY_INSIDE_SECTION] === true ? " data-setting-in-section=\"true\"" : "");
 
     const htmlInput =
       `<input id="${id}"
@@ -160,7 +167,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
               ${disabled ? "disabled" : ""}
               ${placeholder ? `placeholder="${placeholder}"` : ""}
               oninput="${jsFunction}"
-              data-setting data-setting-preview >`;
+              data-setting data-setting-preview ${dataSettingInSection} >`;
 
     return this.wrapHTMLField(field, disabled, htmlInput);
   }
@@ -195,6 +202,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const cols = field.properties?.columns;
     const rows = field.properties?.rows;
     const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
+    const dataSettingInSection = (data[DATA_PROPERTY_INSIDE_SECTION] === true ? " data-setting-in-section=\"true\"" : "");
 
     const htmlTextarea =
       `<textarea id="${id}"
@@ -204,7 +212,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                  ${disabled ? "disabled" : ""}
                  ${placeholder ? `placeholder="${placeholder}"` : ""}
                  oninput="${jsFunction}"
-                 data-setting data-setting-preview >${value || ""}</textarea>`;
+                 data-setting data-setting-preview ${dataSettingInSection} >${value || ""}</textarea>`;
 
     return this.wrapHTMLField(field, disabled, htmlTextarea);
   }
@@ -238,13 +246,14 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const disabled = !this.isFieldEnabled(field, data);
     const htmlOptions = this.generateHTMLOptions(field, data, new SelectComboCallback());
     const jsFunction = this.getOnModificationJavascript(field, "fieldChanged(this)");
+    const dataSettingInSection = (data[DATA_PROPERTY_INSIDE_SECTION] === true ? " data-setting-in-section=\"true\"" : "");
 
     const htmlSelect =
       `<select id="${id}"
                name="${id}"
                ${disabled ? "disabled" : ""}
                oninput="${jsFunction}"
-               data-setting >
+               data-setting ${dataSettingInSection}>
                ${htmlOptions}
        </select>`;
 
@@ -258,13 +267,14 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const disabled = !this.isFieldEnabled(field, data);
     const htmlOptions = this.generateHTMLMultiOptions(field, data);
     const jsFunction = this.getOnModificationJavascript(field, 'fieldChanged(this,Array.apply(null, this.options).filter(o => o.selected).map(o => o.value).join(`\n`))');
+    const dataSettingInSection = (data[DATA_PROPERTY_INSIDE_SECTION] === true ? " data-setting-in-section=\"true\"" : "");
 
     const htmlSelect =
       `<select id="${id}"
                name="${id}"
                ${disabled ? "disabled" : ""}
                oninput="${jsFunction}"
-               data-setting multiple>
+               data-setting multiple ${dataSettingInSection}>
                ${htmlOptions}
        </select>`;
 
@@ -283,6 +293,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
     const placeholder = this.getFieldPlaceHolder(field);
     const htmlOptions = this.generateHTMLOptions(field, data, new ListComboCallback());
     const jsFunction = this.getOnModificationJavascript(field, `comboFieldChanged('${id}')`);
+    const dataSettingInSection = (data[DATA_PROPERTY_INSIDE_SECTION] === true ? " data-setting-in-section=\"true\"" : "");
     const onload = `initComboField('${id}')`;
     const htmlcombo =`<ul class="ul-color ul-size select-list-group" id="${id}_listgroup">
     <li class="li-style">
@@ -294,7 +305,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
                 data-onload="${onload}"
                 placeholder="${placeholder || ""}" 
                 onfocusout="delayedHideComboList('${id}')"
-                oninput="${jsFunction}"/>
+                oninput="${jsFunction} ${dataSettingInSection}"/>
         <ul class="ul-color ul-position" data-toggle="false" id="${id}_innerUL">
           ${htmlOptions}
         </ul>
