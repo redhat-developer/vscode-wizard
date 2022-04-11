@@ -210,7 +210,8 @@ select {
     color: var(--color-foreground);
     cursor: pointer;
     padding: 2px 23px 2px 8px;
-    min-width: 5em;
+    min-width: 25.6em;
+    max-width: 25.6em;
     appearance: none;
     -webkit-appearance: none;
 }
