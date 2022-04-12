@@ -414,6 +414,10 @@ function comboRegisterKeyUpDownListener(comboId) {
     }
     for( let i = 0; i < listArray.length; i++ ) {
       listArray[i].setAttribute("data-highlight", i === newHighlight);
+      if( i === newHighlight ) {
+        console.log("Highlighted element has scrolltop of " + listArray[i].scrollTop);
+        listArray[i].scrollIntoView();
+      }
     }
   };
 }
