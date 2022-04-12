@@ -208,7 +208,10 @@ export function getSinglePageAllControlsDefinition(context: vscode.ExtensionCont
                     description: "Which set of myths do you believe?",
                     properties: {
                         options: [
-                           "Jedi", "Pastafarian"
+                           "Jedi", "Pastafarian",
+                           "Baha'i", "Buddhism", "Christianity", "Confucianism", 
+                           "Hinduism", "Islam", "Jainism", "Judaism", "Shinto", 
+                           "Sikhism", "Taoism", "Zoroastrianism",
                         ]
                     }
                 },
