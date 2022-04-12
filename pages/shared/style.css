@@ -647,6 +647,10 @@ header {
     left: 3px;
 }
 
+main.col-md-11.col-xl-11.py-md-3.pl-md-4.pr-md-4.bd-content.padding-at-bottom {
+    padding-bottom: 11px;
+}
+
 .container {
     display: grid;
     grid-template-areas: 'header header' 'hero hero' 'content sidebar';
