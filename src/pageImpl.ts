@@ -137,49 +137,18 @@ function createDispatch(
       mapping => mapping.command === message.command
     );
     if (mapping) {
-      const response: CommandResponse = {
-        command: `${message.command}Response`,
-      };
       mapping.handler.call(null, message.parameters).then(result => {
         if (!result) {
           return;
         }
-        const templates: Template[] | undefined = (result.templates === null ? mapping.defaultTemplates : result.templates);
         const forward: string | undefined = (result.forward === null ? mapping.defaultForward : result.forward);
-
-        if (templates) {
-          response.contents = [];
-          templates.forEach(template => {
-            if (template.content) {
-              response.contents?.push({
-                id: template.id,
-                body: handlebars.compile(template.content)(result.returnObject),
-              });
-            } else if (template.contentUrl) {
-              response.contents?.push({
-                id: template.id,
-                body: handlebars.compile(
-                  fs
-                    .readFileSync(
-                      path.join(resourceRoot, template.contentUrl)
-                    )
-                    .toString()
-                )(result),
-              });
-            }
-          });
-        } else if (forward) {
+        if( forward ) {
           return handler.call(null, {
             command: forward,
             parameters: result,
           });
         } else {
-          response.result = result;
-        }
-        response.focusedField = result?.returnObject?.focusedField;
-        const panel: vscode.WebviewPanel | undefined = currentPanels.get(currentPanelName);
-        if (panel && panel !== undefined) {
-          panel.webview.postMessage(response);
+          postMessageHandlerResponse(mapping, result, currentPanelName, resourceRoot);
         }
       });
     } else {
@@ -189,4 +158,58 @@ function createDispatch(
     }
   };
   return handler;
+}
+
+const postMessageHandlerResponse = async (mapping: MesssageMapping, 
+  result: HandlerResponse,
+  currentPanelName: string,
+  resourceRoot: string
+) => { 
+  const resp: CommandResponse = generatePostResponseFromHandlerResponse(mapping, result, resourceRoot);
+  sendMessageToWebview(resp, currentPanelName);
+}
+
+const sendMessageToWebview = (resp: CommandResponse, currentPanelName: string): void => {
+  const panel: vscode.WebviewPanel | undefined = currentPanels.get(currentPanelName);
+  if (panel && panel !== undefined) {
+    panel.webview.postMessage(resp);
+  }
+}
+
+const generatePostResponseFromHandlerResponse = (
+  mapping: MesssageMapping, 
+  result: HandlerResponse,
+  resourceRoot: string
+): CommandResponse => {
+
+  const response: CommandResponse = {
+    command: `${mapping.command}Response`,
+  };
+  const templates: Template[] | undefined = (result.templates === null ? mapping.defaultTemplates : result.templates);
+  if (templates) {
+    response.contents = [];
+    templates.forEach(template => {
+      if (template.content) {
+        response.contents?.push({
+          id: template.id,
+          body: handlebars.compile(template.content)(result.returnObject),
+        });
+      } else if (template.contentUrl) {
+        response.contents?.push({
+          id: template.id,
+          body: handlebars.compile(
+            fs
+              .readFileSync(
+                path.join(resourceRoot, template.contentUrl)
+              )
+              .toString()
+          )(result),
+        });
+      }
+    });
+  } else {
+    response.result = result;
+  }
+  response.focusedField = result?.returnObject?.focusedField;
+  return response;
 }

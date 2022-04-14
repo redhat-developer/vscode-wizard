@@ -41,7 +41,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     this.context = context2;
     this.readyMapping = {
       command: "ready",
-      handler: async (parameters: any) => {
+      handler: async (parameters: any): Promise<HandlerResponse> => {
         // Get templates for the first page content and validation result
         const templates = this.getShowCurrentPageTemplates(parameters);
         templates.push(...await this.createValidationTemplates(parameters));
@@ -56,35 +56,35 @@ export class WebviewWizard extends Wizard implements IWizard {
 
     this.nextPressedMapping = {
       command: "nextPressed",
-      handler: async (parameters: any) => {
+      handler: async (parameters: any): Promise<HandlerResponse> => {
         return this.nextImpl(parameters);
       }
     };
 
     this.backPressedMapping = {
       command: "backPressed",
-      handler: async (parameters: any) => {
-        return await this.backImpl(parameters);
+      handler: async (parameters: any): Promise<HandlerResponse> => {
+        return this.backImpl(parameters);
       }
     };
 
     this.finishPressedMapping = {
       command: "finishPressed",
-      handler: async (parameters: any) => {
+      handler: async (parameters: any): Promise<HandlerResponse> => {
         return this.finishImpl(parameters);
       }
     };
 
     this.openFileDialogMapping = {
       command: "openFileDialog",
-      handler: async (parameters: any) => {
+      handler: async (parameters: any): Promise<HandlerResponse> => {
         return this.openFileDialogMappingImpl(parameters);
       }
     }
 
     this.validateMapping = {
       command: "validate",
-      handler: async (parameters: any) => {
+      handler: async (parameters: any): Promise<HandlerResponse> => {
         if (!this.isDirty) {
           this.isDirty = true;
           this.updateWizardPanelTitle();
@@ -97,7 +97,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     };
   }
 
-  private async createValidationTemplates(parameters: any) {
+  private async createValidationTemplates(parameters: any): Promise<Template[]> {
     const validations = await this.generateValidationTemplates(parameters);
     validations.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false) });
     this.previousParameters = parameters;
