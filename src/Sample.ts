@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { WebviewWizard, WizardDefinition, ValidatorResponseItem, SEVERITY, PerformFinishResponse, IWizardPage, FieldDefinitionState, BUTTONS, UPDATE_TITLE, StandardWizardPageRenderer, WizardPageFieldDefinition } from '.';
+import { WebviewWizard, WizardDefinition, ValidatorResponseItem, SEVERITY, PerformFinishResponse, IWizardPage, FieldDefinitionState, BUTTONS, UPDATE_TITLE, StandardWizardPageRenderer, WizardPageFieldDefinition, ValidatorResponse } from '.';
 import { createButton } from './WebviewWizard';
 export function getTwoPageLinearSampleWizardWithValidation(context: vscode.ExtensionContext) : WebviewWizard {
     let def : WizardDefinition = {
@@ -264,18 +264,9 @@ export function getSinglePageAllControlsDefinition(context: vscode.ExtensionCont
                     }
                 },
             ],
-            validator: (parameters:any) => {
+            validator: (parameters:any): ValidatorResponse => {
                 let items : ValidatorResponseItem[] = [];
                 const username = parameters.addusername;
-                const religion = parameters.religion;
-                if( religion && typeof religion === 'string' && (religion as string).startsWith("satan")) {
-                    items.push(createValidationItem(SEVERITY.ERROR, "religion", 
-                    "No Satanists allowed!"));
-                }
-                if( username === 'Max') {
-                    items.push(createValidationItem(SEVERITY.ERROR, "addusername", 
-                    "Max is not allowed to use this wizard. Sorry Max!"));
-                }
                 if( username === 'Fred') {
                     items.push(createValidationItem(SEVERITY.WARN, "addusername", 
                     "Fred may cause you to have to do more work"));
@@ -285,6 +276,14 @@ export function getSinglePageAllControlsDefinition(context: vscode.ExtensionCont
                     "I am overjoyed to see my overlord, El Jefe, long may he reign!"));
                 }
                 return { items: items };
+            },
+            asyncValidator: (parameters:any, prev: any): Promise<ValidatorResponse>[] => {
+                const ret: Promise<ValidatorResponse>[] = [];
+                if( prev.addusername !== parameters.addusername)
+                    ret.push(validateMaxName(parameters.addusername));
+                if( prev.religion !== parameters.religion ) 
+                    ret.push(validateSatanistsReligion(parameters.religion));
+                return ret;
             }
           }
         ]
@@ -292,6 +291,30 @@ export function getSinglePageAllControlsDefinition(context: vscode.ExtensionCont
     return def;
   }
 
+  const validateMaxName = async (name: string): Promise<ValidatorResponse> => {
+    console.log("Validating name");
+    await new Promise(res => setTimeout(res, 1500));
+    if( name === 'Max') {
+        console.log("Max is bad");
+        const ret = createValidationItem(SEVERITY.ERROR, "addusername", 
+        "Max is not allowed to use this wizard. Sorry Max!");
+        return {items: [ret]};
+    }
+    console.log(name + " is ok");
+
+    return {items: []};
+  }
+
+  const validateSatanistsReligion = async (religion: string): Promise<ValidatorResponse> => {
+    console.log("Validating Religion");
+    await new Promise(res => setTimeout(res, 2000));
+    if( religion && typeof religion === 'string' && (religion as string).startsWith("satan")) {
+        const r = createValidationItem(SEVERITY.ERROR, "religion", 
+        "No Satanists allowed!");
+        return {items: [r]};
+    }
+    return {items: []};
+}
 
   export function getSinglePageDependentControls(context: vscode.ExtensionContext) : WizardDefinition {
     let def : WizardDefinition = {
@@ -683,7 +706,7 @@ export function demonstrateCustomRenderer(context: vscode.ExtensionContext) : We
           ],
           renderer: new class extends StandardWizardPageRenderer {
               constructor() {
-                super(new Map<string,FieldDefinitionState>());
+                super();
               }
               createHTMLField(field: WizardPageFieldDefinition, data: any): string {
                   if( field.type === 'weirdwidget') {
