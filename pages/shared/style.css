@@ -1500,14 +1500,20 @@ div.error-message {
 }
 
 div.warn-message {
+    position: relative;
     display: block;
     text-align: left;
+    left: 130px;
+    top: -8px;
     color: var(--vscode-editorWarning-foreground);
 }
 
 div.info-message {
+    position: relative;
     display: block;
     text-align: left;
+    left: 130px;
+    top: -8px;
     color: var(--vscode-editorInfo-foreground);
 }
 
