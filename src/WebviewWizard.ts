@@ -43,8 +43,8 @@ export class WebviewWizard extends Wizard implements IWizard {
       command: "ready",
       handler: async (parameters: any): Promise<HandlerResponse> => {
         // Get templates for the first page content and validation result
-        const templates = this.getShowCurrentPageTemplates(parameters);
-        templates.push(...await this.createValidationTemplates(parameters));
+        const templates: Template[] = await this.getShowCurrentPageTemplates(parameters);
+        templates.push(...(await this.createValidationTemplates(parameters)));
         return {
           returnObject: {
             focusedField: this.currentPage?.getFocusedField()
@@ -98,8 +98,9 @@ export class WebviewWizard extends Wizard implements IWizard {
   }
 
   private async createValidationTemplates(parameters: any): Promise<Template[]> {
-    const validations = await this.generateValidationTemplates(parameters);
-    validations.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false) });
+    const validations: Template[] = await this.generateValidationTemplates(parameters);
+    const content = await this.getUpdatedWizardControls(parameters, false);
+    validations.push({ id: "wizardControls", content: content });
     this.previousParameters = parameters;
     return validations;
   }
@@ -144,7 +145,7 @@ export class WebviewWizard extends Wizard implements IWizard {
   async backImpl(parameters: any): Promise<HandlerResponse> {
     this.currentPage = this.getActualPreviousPage(parameters);
     // Get templates for the previous page content and validation result
-    const templates = this.getShowCurrentPageTemplates(parameters);
+    const templates: Template[] = await this.getShowCurrentPageTemplates(parameters);
     templates.push(...await this.createValidationTemplates(parameters));
     return {
       returnObject: {
@@ -158,7 +159,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     let nextPage: IWizardPage | null = this.getActualNextPage(parameters);
     this.currentPage = nextPage;
     // Get templates for the next page content and validation result
-    const templates = this.getShowCurrentPageTemplates(parameters);
+    const templates = await this.getShowCurrentPageTemplates(parameters);
     templates.push(...await this.createValidationTemplates(parameters));
     return {
       returnObject: {
@@ -223,7 +224,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     disposeWizard(this.id);
   }
 
-  getShowCurrentPageTemplates(parameters: any): Template[] {
+  async getShowCurrentPageTemplates(parameters: any): Promise<Template[]> {
     let ret: Template[] = [];
     if (this.definition.hideWizardHeader === true) {
       ret.push({ id: "wizardHeader", content: "&nbsp;" });
@@ -248,7 +249,8 @@ export class WebviewWizard extends Wizard implements IWizard {
     }
 
     ret.push({ id: "content", content: this.getCurrentPageContent(parameters) });
-    ret.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, true) });
+
+    ret.push({ id: "wizardControls", content: await this.getUpdatedWizardControls(parameters, true) });
     return ret;
   }
 
@@ -267,8 +269,10 @@ export class WebviewWizard extends Wizard implements IWizard {
     return this.getCurrentPage() !== null ? this.getCurrentPage()!.getValidationTemplates(parameters, this.previousParameters) : [];
   }
 
-  validateAndUpdatePageComplete(parameters: any) {
-    this.getCurrentPage()!.validateAndUpdatePageComplete(parameters, this.previousParameters);
+  async validateAndUpdatePageComplete(parameters: any) {
+    const cp = this.getCurrentPage();
+    if( cp)
+      cp.validateAndUpdatePageComplete(parameters, this.previousParameters);
   }
 
   getCurrentPageName(): string | undefined {
@@ -332,17 +336,17 @@ export class WebviewWizard extends Wizard implements IWizard {
       this.addPage(page);
     }
   }
-  getUpdatedWizardControls(parameters: any, validate: boolean): string {
+  async getUpdatedWizardControls(parameters: any, validate: boolean): Promise<string> {
     if (validate) {
       // Don't care about return value here, just want pageComplete to be set
-      this.validateAndUpdatePageComplete(parameters);
+      await this.validateAndUpdatePageComplete(parameters);
     }
     let hasPrevious = (this.currentPage !== null &&
       this.getActualPreviousPage(this.currentPage) !== null);
 
     let hasNext = (this.currentPage !== null && this.currentPage.isPageComplete() &&
       this.getActualNextPage(parameters) !== null);
-    let canFinishNow = this.canFinishInternal(parameters);
+    let canFinishNow: boolean = this.currentPage !== null && this.currentPage.isPageComplete() && this.canFinishInternal(parameters);
 
     let ret: string = "";
     if (this.definition.buttons) {

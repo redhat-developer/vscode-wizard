@@ -56,8 +56,8 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
      * @param parameters the current parameters.
      * @param previousParameters the previous parameters.
      */
-    validateAndUpdatePageComplete(parameters: any, previousParameters: any): void {
-      const hasError = this.getValidationStatus(parameters, previousParameters);
+    async validateAndUpdatePageComplete(parameters: any, previousParameters: any): Promise<void> {
+      const hasError = await this.getValidationStatus(parameters, previousParameters);
       this.setPageComplete(!hasError);
     }
 
