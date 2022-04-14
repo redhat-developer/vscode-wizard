@@ -21,6 +21,7 @@ export interface MesssageMapping {
 export interface HandlerResponse {
   returnObject: any;
   templates?: Template[];
+  delayedTemplates?: Promise<Template[]>[];
   forward?: string;
 }
 

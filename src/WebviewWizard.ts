@@ -378,7 +378,8 @@ export function createButton(id: string | undefined, onclick: string | undefined
                   ${enabled ? "" : " disabled"}>${text}</button>
           `
 }
-export type WizardPageValidator = (parameters: any, previousParameters?: any) => Promise<ValidatorResponse>;
+export type WizardPageValidator = (parameters: any, previousParameters?: any) => ValidatorResponse;
+export type AsyncWizardPageValidator = (parameters: any, previousParameters: any) => Promise<ValidatorResponse>[];
 export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
 
 export interface WizardPageFieldOptionLabelProvider {
@@ -417,6 +418,11 @@ export interface ValidatorResponse {
   fieldRefresh?: Map<string, FieldDefinitionState>;
 }
 
+export interface CompoundValidatorResponse {
+  syncResponse: ValidatorResponse,
+  asyncResponses: Promise<ValidatorResponse>[];
+}
+
 export interface WizardDefinition {
   title: string;
   description?: string;
@@ -436,6 +442,7 @@ export interface WizardPageDefinition {
   hideWizardPageHeader?: boolean;
   fields: (WizardPageFieldDefinition | WizardPageSectionDefinition)[];
   validator?: WizardPageValidator;
+  asyncValidator?: AsyncWizardPageValidator;
 }
 
 export interface WizardPageSectionDefinition {

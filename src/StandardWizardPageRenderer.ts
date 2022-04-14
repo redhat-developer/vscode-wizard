@@ -1,4 +1,4 @@
-import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse, createButton, WizardPageFieldOptionLabelProvider, FieldDefinitionState } from './WebviewWizard';
+import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, createButton, WizardPageFieldOptionLabelProvider, FieldDefinitionState } from './WebviewWizard';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
 import { WizardPageFieldOptionProvider } from '.';
 

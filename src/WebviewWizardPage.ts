@@ -1,10 +1,10 @@
 import { IWizardPage } from './IWizardPage';
 import { WizardPage } from './WizardPage';
-import { WizardPageDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, ValidatorResponse, SEVERITY, FieldDefinitionState } from './WebviewWizard';
+import { WizardPageDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, ValidatorResponse, SEVERITY, FieldDefinitionState, CompoundValidatorResponse } from './WebviewWizard';
 import { Template } from './pageImpl';
 import { StandardWizardPageRenderer } from './StandardWizardPageRenderer';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
-import { WizardDefinition, WizardPageFieldDefinition, WizardPageSectionDefinition } from '.';
+import { AsyncWizardPageValidator, ValidatorResponseItem, WizardDefinition, WizardPageFieldDefinition, WizardPageSectionDefinition, WizardPageValidator } from '.';
 export class WebviewWizardPage extends WizardPage implements IWizardPage {
 
     initializedRenderer: IWizardPageRenderer;
@@ -62,14 +62,30 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
     }
 
     private async getValidationStatus(parameters: any, previousParameters: any) : Promise<boolean> {
-      const resp = await this.doValidate(parameters, previousParameters);
-      return (resp && resp.items && resp.items.some(item => item.severity === SEVERITY.ERROR)) || false;
+      const resp = this.doValidate(parameters, previousParameters);
+      const waited: ValidatorResponse[] = await Promise.all(resp.asyncResponses);
+      const flat: ValidatorResponse[] = [resp.syncResponse].concat(...waited);
+      const mapped: ValidatorResponseItem[][] = flat.map((x) => x.items || []);
+      const allItems: ValidatorResponseItem[] = ([] as ValidatorResponseItem[]).concat(...mapped);
+      return (resp && allItems && allItems.some(item => item.severity === SEVERITY.ERROR)) || false;
     }
 
-    private async doValidate(parameters: any, previousParameters: any) : Promise<ValidatorResponse | undefined> {
-      if (this.pageDefinition.validator) {
-        return this.pageDefinition.validator.call(null, parameters, previousParameters);
+    private doValidate(parameters: any, previousParameters: any) : CompoundValidatorResponse {
+      const compoundResponse: CompoundValidatorResponse = {
+        syncResponse: {items: []},
+        asyncResponses: [],
+      };
+      if( this.pageDefinition.asyncValidator) {
+        const v: AsyncWizardPageValidator = this.pageDefinition.asyncValidator;
+        const ret: Promise<ValidatorResponse>[] = v.call(null, parameters, previousParameters);
+        compoundResponse.asyncResponses = ret;
       }
+      if (this.pageDefinition.validator) {
+        const v: WizardPageValidator = this.pageDefinition.validator;
+        const ret: ValidatorResponse = v.call(null, parameters, previousParameters);
+        compoundResponse.syncResponse = ret;
+      }
+      return compoundResponse;
     }
 
     /**
@@ -114,9 +130,47 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
     }
 
     private async validate(parameters: any, previousParameters: any): Promise<Template[]> {
-        let templates: Template[] = [];
-        const resp = await this.doValidate(parameters, previousParameters);
-        if (resp) {
+        const resp: CompoundValidatorResponse = this.doValidate(parameters, previousParameters);
+        // TODO to make this truly async, we would try to make sure that as different 
+        // validations resolve, we can fire off those changes to the UI.
+        // For now, we'll just wait for them here and send the update. 
+        const templateCollector: Template[] = [];
+        if( resp.syncResponse) {
+          const syncTemplates: Template[] = this.validatorResponseToTemplates(resp.syncResponse, parameters);
+          templateCollector.push(...syncTemplates);
+        }
+        for( let i = 0; resp.asyncResponses && i < resp.asyncResponses.length; i++ ) {
+          const oneAsync: Template[] = this.validatorResponseToTemplates(await resp.asyncResponses[i], parameters);
+          templateCollector.push(...oneAsync);
+        }
+        templateCollector.push(...(this.getClearAllFieldValidationsTemplates(parameters, templateCollector)));
+        return templateCollector;
+    }
+
+    private getClearAllFieldValidationsTemplates(parameters: any, existing: Template[]): Template[] {
+      const templates: Template[] = [];
+
+        // All the official ones were added.
+        // Now lets clear out all the empty ones
+        for (let key of this.pageDefinition.fields) {
+          if( isWizardPageSectionDefinition(key)) {
+              for (let key2 of key.childFields) {
+                if( !this.containsTemplate(key2.id, existing)) {
+                  templates.push({ id: key2.id + "Validation", content: "&nbsp;"});
+                }
+              }
+          } else if( isWizardPageFieldDefinition(key)) {
+            if( !this.containsTemplate(key.id, existing)) {
+              templates.push({ id: key.id + "Validation", content: "&nbsp;"});
+            }
+          }
+      }
+      return templates;
+    }
+
+    private validatorResponseToTemplates(resp:ValidatorResponse|undefined, parameters: any): Template[] {
+      let templates: Template[] = [];
+      if (resp) {
 
             // If validation has returned any widgets to refresh, we should do that now
             if( resp.fieldRefresh ) {
@@ -158,23 +212,6 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
               templates = templates.concat(template);
             }
         }
-
-        // All the official ones were added.
-        // Now lets clear out all the empty ones
-        for (let key of this.pageDefinition.fields) {
-            if( isWizardPageSectionDefinition(key)) {
-                for (let key2 of key.childFields) {
-                    if( !this.containsTemplate(key2.id, templates)) {
-                        templates.push({ id: key2.id + "Validation", content: "&nbsp;"});
-                    }
-                }
-            } else if( isWizardPageFieldDefinition(key)) {
-                if( !this.containsTemplate(key.id, templates)) {
-                    templates.push({ id: key.id + "Validation", content: "&nbsp;"});
-                }
-            }
-        }
-
         return templates;
     }
 
