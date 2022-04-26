@@ -3,7 +3,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as handlebars from 'handlebars';
 
+// Deprecated
 export type MessageHandler = (parameters?: any) => Promise<HandlerResponse>;
+
+export type AsyncMessageCallback = (response: HandlerResponse) => Promise<void>;
+export type AsyncMessageHandler = (callback: AsyncMessageCallback, parameters?: any) => Promise<void>;
 
 export interface Template {
   id: string;
@@ -13,7 +17,7 @@ export interface Template {
 
 export interface MesssageMapping {
   command: string;
-  handler: MessageHandler;
+  asyncHandler: AsyncMessageHandler;
   defaultTemplates?: Template[];
   defaultForward?: string;
 }
@@ -138,7 +142,7 @@ function createDispatch(
       mapping => mapping.command === message.command
     );
     if (mapping) {
-      mapping.handler.call(null, message.parameters).then(result => {
+      const callback: AsyncMessageCallback = async (result: HandlerResponse): Promise<void> => {
         if (!result) {
           return;
         }
@@ -151,7 +155,8 @@ function createDispatch(
         } else {
           postMessageHandlerResponse(mapping, result, currentPanelName, resourceRoot);
         }
-      });
+      };
+      mapping.asyncHandler.call(null, callback, message.parameters);
     } else {
       vscode.window.showErrorMessage(
         `Can not find a handler for ${message.command}.`
