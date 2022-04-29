@@ -15,5 +15,4 @@ export interface IWizard {
     getPreviousPage(page:IWizardPage): IWizardPage | null;
     performCancel(): void;
     performFinish(): void;
-  
   }

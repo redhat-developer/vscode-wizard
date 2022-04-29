@@ -1,7 +1,7 @@
 import { IWizardPage } from './IWizardPage';
 import { WizardPage } from './WizardPage';
 import { WizardPageDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, ValidatorResponse, SEVERITY, FieldDefinitionState, CompoundValidatorResponse } from './WebviewWizard';
-import { Template } from './pageImpl';
+import { AsyncMessageCallback, HandlerResponse, Template } from './pageImpl';
 import { StandardWizardPageRenderer } from './StandardWizardPageRenderer';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
 import { AsyncWizardPageValidator, ValidatorResponseItem, WizardDefinition, WizardPageFieldDefinition, WizardPageSectionDefinition, WizardPageValidator } from '.';
@@ -11,6 +11,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
     pageDefinition:WizardPageDefinition;
     wizardDefinition:WizardDefinition;
     fieldStateCache: Map<string,FieldDefinitionState> = new Map<string,FieldDefinitionState>();
+    mostRecentValidationCall: number = Date.now();
 
     constructor(pageDefinition: WizardPageDefinition, wizardDefinition: WizardDefinition) {
         super(pageDefinition.id, pageDefinition.title, pageDefinition.description);
@@ -50,27 +51,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         return this.pageDefinition;
     }
 
-    /**
-     * Validate the wizard page by updating the page complete flag only.
-     *
-     * @param parameters the current parameters.
-     * @param previousParameters the previous parameters.
-     */
-    async validateAndUpdatePageComplete(parameters: any, previousParameters: any): Promise<void> {
-      const hasError = await this.getValidationStatus(parameters, previousParameters);
-      this.setPageComplete(!hasError);
-    }
-
-    private async getValidationStatus(parameters: any, previousParameters: any) : Promise<boolean> {
-      const resp = this.doValidate(parameters, previousParameters);
-      const waited: ValidatorResponse[] = await Promise.all(resp.asyncResponses);
-      const flat: ValidatorResponse[] = [resp.syncResponse].concat(...waited);
-      const mapped: ValidatorResponseItem[][] = flat.map((x) => x.items || []);
-      const allItems: ValidatorResponseItem[] = ([] as ValidatorResponseItem[]).concat(...mapped);
-      return (resp && allItems && allItems.some(item => item.severity === SEVERITY.ERROR)) || false;
-    }
-
-    private doValidate(parameters: any, previousParameters: any) : CompoundValidatorResponse {
+    private getValidationCompoundResponse(parameters: any, previousParameters: any) : CompoundValidatorResponse {
       const compoundResponse: CompoundValidatorResponse = {
         syncResponse: {items: []},
         asyncResponses: [],
@@ -98,9 +79,9 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
      *
      * @returns Template collection
      */
-    async getValidationTemplates(parameters:any, previousParameters: any) : Promise<Template[]> {
-        this.setPageComplete(true);
-        return await this.validate(parameters, previousParameters);
+    async firePageValidationTemplates(callback: AsyncMessageCallback, parameters:any, previousParameters: any) : Promise<void> {
+        this.setPageComplete(false);
+        await this.validatePageAndFire(callback, parameters, previousParameters);
     }
 
     private severityToImage(severity: SEVERITY): string {
@@ -129,25 +110,54 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
       }
     }
 
-    private async validate(parameters: any, previousParameters: any): Promise<Template[]> {
-        const resp: CompoundValidatorResponse = this.doValidate(parameters, previousParameters);
-        // TODO to make this truly async, we would try to make sure that as different 
-        // validations resolve, we can fire off those changes to the UI.
-        // For now, we'll just wait for them here and send the update. 
-        const templateCollector: Template[] = [];
-        if( resp.syncResponse) {
-          const syncTemplates: Template[] = this.validatorResponseToTemplates(resp.syncResponse, parameters);
-          templateCollector.push(...syncTemplates);
-        }
-        for( let i = 0; resp.asyncResponses && i < resp.asyncResponses.length; i++ ) {
-          const oneAsync: Template[] = this.validatorResponseToTemplates(await resp.asyncResponses[i], parameters);
-          templateCollector.push(...oneAsync);
-        }
-        templateCollector.push(...(this.getClearAllFieldValidationsTemplates(parameters, templateCollector)));
-        return templateCollector;
+    validatorResponseHasError(resp: ValidatorResponse): boolean {
+      return resp && resp.items ? resp.items.filter((x) => x.severity === SEVERITY.ERROR).length > 0 : false;
+    }
+    private async validatePageAndFire(callback: AsyncMessageCallback, parameters: any, previousParameters: any): Promise<void> {
+      const currentTime = Date.now();
+      this.mostRecentValidationCall = currentTime;
+      const toHandlerResponse = (x: Template[]): HandlerResponse => { return {returnObject: {}, templates: x }};
+      const username = parameters.addusername;
+      // TODO this.setPageComplete(false);
+      // await callback.call(null, this.templatesToHandlerResponse(validations, false));
+      const resp: CompoundValidatorResponse = this.getValidationCompoundResponse(parameters, previousParameters);
+      // TODO to make this truly async, we would try to make sure that as different 
+      // validations resolve, we can fire off those changes to the UI.
+      // For now, we'll just wait for them here and send the update. 
+      const collector: Template[] = [];
+      let complete = true;
+      if( resp.syncResponse) {
+        complete = complete && !this.validatorResponseHasError(resp.syncResponse);
+        this.setPageComplete(complete);
+        const syncTemplates: Template[] = this.validatorResponseToTemplates(resp.syncResponse, parameters);
+        collector.push(...syncTemplates);
+        console.log("Calling sync templates: username=" + username + ";  " + JSON.stringify(syncTemplates));
+        if( this.mostRecentValidationCall === currentTime)
+          await callback.call(null, toHandlerResponse(syncTemplates));
+      }
+
+      // TODO handle these consecutively
+      for( let i = 0; resp.asyncResponses && i < resp.asyncResponses.length; i++ ) {
+        const oneAsync: Promise<ValidatorResponse> = resp.asyncResponses[i];
+        oneAsync.then(async (x: ValidatorResponse) => {
+          complete = complete && !this.validatorResponseHasError(x);
+          this.setPageComplete(complete);
+          const xTemplates: Template[] = this.validatorResponseToTemplates(x, parameters);
+          collector.push(...xTemplates);
+          console.log("Calling async templates: username=" + username + ";  " + JSON.stringify(xTemplates));
+          if( this.mostRecentValidationCall === currentTime)
+            await callback.call(null, toHandlerResponse(xTemplates));
+        });
+      }
+      await Promise.all(resp.asyncResponses);
+      console.log("Done waiting");
+      const clearOld: Template[] = this.getClearAllEmptyFieldValidationsTemplates(parameters, collector);
+      console.log("Calling clear templates: username=" + username + ";  " + JSON.stringify(clearOld));
+      if( this.mostRecentValidationCall === currentTime)
+        await callback.call(null, toHandlerResponse(clearOld));
     }
 
-    private getClearAllFieldValidationsTemplates(parameters: any, existing: Template[]): Template[] {
+    private getClearAllEmptyFieldValidationsTemplates(parameters: any, existing: Template[]): Template[] {
       const templates: Template[] = [];
 
         // All the official ones were added.
