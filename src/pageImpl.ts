@@ -15,7 +15,7 @@ export interface Template {
   contentUrl?: string;
 }
 
-export interface MesssageMapping {
+export interface MessageMapping {
   command: string;
   asyncHandler: AsyncMessageHandler;
   defaultTemplates?: Template[];
@@ -71,7 +71,7 @@ export function createOrShowWizard(
   viewType: string,
   title: string,
   context: vscode.ExtensionContext,
-  messageMappings: MesssageMapping[]) {
+  messageMappings: MessageMapping[]) {
 
   const pages: string = path.join(__dirname, "../", "pages").normalize();
   const html: string = path.join(pages, "stub.html");
@@ -94,7 +94,7 @@ export function createOrShowWizardWithPaths(
   viewType: string,
   title: string,
   context: vscode.ExtensionContext,
-  messageMappings: MesssageMapping[],
+  messageMappings: MessageMapping[],
   rootPath: string,
   pagePath: string
 ) {
@@ -133,7 +133,7 @@ export function createOrShowWizardWithPaths(
 }
 
 function createDispatch(
-  messageMappings: MesssageMapping[],
+  messageMappings: MessageMapping[],
   currentPanelName: string,
   resourceRoot: string
 ) {
@@ -166,7 +166,7 @@ function createDispatch(
   return handler;
 }
 
-const postMessageHandlerResponse = async (mapping: MesssageMapping, 
+const postMessageHandlerResponse = async (mapping: MessageMapping, 
   result: HandlerResponse,
   currentPanelName: string,
   resourceRoot: string
@@ -183,7 +183,7 @@ const sendMessageToWebview = (resp: CommandResponse, currentPanelName: string): 
 }
 
 const generatePostResponseFromHandlerResponse = (
-  mapping: MesssageMapping, 
+  mapping: MessageMapping, 
   result: HandlerResponse,
   resourceRoot: string
 ): CommandResponse => {
