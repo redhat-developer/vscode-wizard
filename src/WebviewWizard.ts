@@ -2,7 +2,7 @@ import { Wizard } from './Wizard';
 import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 import * as vscode from 'vscode';
-import { MesssageMapping, Template, HandlerResponse, AsyncMessageCallback } from "./pageImpl";
+import { MessageMapping, Template, HandlerResponse, AsyncMessageCallback } from "./pageImpl";
 import { createOrShowWizard, disposeWizard, sendInitialData, updatePanelTitle } from "./pageImpl";
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager, PerformFinishResponse } from './IWizardWorkflowManager';
@@ -10,12 +10,12 @@ import { IWizardPageRenderer } from './IWizardPageRenderer';
 
 export class WebviewWizard extends Wizard implements IWizard {
   context: vscode.ExtensionContext;
-  readyMapping: MesssageMapping;
-  backPressedMapping: MesssageMapping;
-  nextPressedMapping: MesssageMapping;
-  finishPressedMapping: MesssageMapping;
-  openFileDialogMapping: MesssageMapping;
-  validateMapping: MesssageMapping;
+  readyMapping: MessageMapping;
+  backPressedMapping: MessageMapping;
+  nextPressedMapping: MessageMapping;
+  finishPressedMapping: MessageMapping;
+  openFileDialogMapping: MessageMapping;
+  validateMapping: MessageMapping;
   currentPage: IWizardPage | null = null;
   previousParameters: any = {};
   id: string;
