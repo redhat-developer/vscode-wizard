@@ -1,4 +1,4 @@
-import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, ValidatorResponse, createButton, WizardPageFieldOptionLabelProvider, FieldDefinitionState } from './WebviewWizard';
+import { WizardPageDefinition, WizardPageFieldDefinition, isWizardPageFieldDefinition, isWizardPageSectionDefinition, WizardPageSectionDefinition, createButton, WizardPageFieldOptionLabelProvider, FieldDefinitionState } from './WebviewWizard';
 import { IWizardPageRenderer } from './IWizardPageRenderer';
 import { WizardPageFieldOptionProvider } from '.';
 
@@ -22,7 +22,10 @@ class ListComboCallback implements ListComboGenerationCallback {
 }
 export class StandardWizardPageRenderer implements IWizardPageRenderer {
   private stateMap: Map<string,FieldDefinitionState>;
-  constructor(state: Map<string,FieldDefinitionState>) {
+  constructor() {
+    this.stateMap = new Map<string,FieldDefinitionState>();
+  }
+  initialize(state: Map<string,FieldDefinitionState>) {
     this.stateMap = state;
   }
   getContentAsHTML(definition: WizardPageDefinition, data: any): string {

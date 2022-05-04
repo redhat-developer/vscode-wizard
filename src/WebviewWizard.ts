@@ -2,7 +2,7 @@ import { Wizard } from './Wizard';
 import { IWizard } from './IWizard';
 import { IWizardPage } from './IWizardPage';
 import * as vscode from 'vscode';
-import { MesssageMapping, Template, HandlerResponse } from "./pageImpl";
+import { MessageMapping, Template, HandlerResponse, AsyncMessageCallback } from "./pageImpl";
 import { createOrShowWizard, disposeWizard, sendInitialData, updatePanelTitle } from "./pageImpl";
 import { WebviewWizardPage } from './WebviewWizardPage';
 import { IWizardWorkflowManager, PerformFinishResponse } from './IWizardWorkflowManager';
@@ -10,12 +10,12 @@ import { IWizardPageRenderer } from './IWizardPageRenderer';
 
 export class WebviewWizard extends Wizard implements IWizard {
   context: vscode.ExtensionContext;
-  readyMapping: MesssageMapping;
-  backPressedMapping: MesssageMapping;
-  nextPressedMapping: MesssageMapping;
-  finishPressedMapping: MesssageMapping;
-  openFileDialogMapping: MesssageMapping;
-  validateMapping: MesssageMapping;
+  readyMapping: MessageMapping;
+  backPressedMapping: MessageMapping;
+  nextPressedMapping: MessageMapping;
+  finishPressedMapping: MessageMapping;
+  openFileDialogMapping: MessageMapping;
+  validateMapping: MessageMapping;
   currentPage: IWizardPage | null = null;
   previousParameters: any = {};
   id: string;
@@ -41,67 +41,58 @@ export class WebviewWizard extends Wizard implements IWizard {
     this.context = context2;
     this.readyMapping = {
       command: "ready",
-      handler: async (parameters: any) => {
+      asyncHandler: async (callback: AsyncMessageCallback, parameters: any): Promise<void> => {
         // Get templates for the first page content and validation result
-        const templates = this.getShowCurrentPageTemplates(parameters);
-        templates.push(...this.createValidationTemplates(parameters));
-        return {
-          returnObject: {
-            focusedField: this.currentPage?.getFocusedField()
-          },
-          templates: templates
-        };
+        await this.fireCurrentPageInitialTemplates(callback, parameters);
+        await this.createAndPostValidationTemplates(callback, parameters);
       }
     };
 
     this.nextPressedMapping = {
       command: "nextPressed",
-      handler: async (parameters: any) => {
-        return this.nextImpl(parameters);
+      asyncHandler: async (callback: AsyncMessageCallback, parameters: any): Promise<void> => {
+        this.nextImpl(callback, parameters);
       }
     };
 
     this.backPressedMapping = {
       command: "backPressed",
-      handler: async (parameters: any) => {
-        return this.backImpl(parameters);
+      asyncHandler: async (callback: AsyncMessageCallback, parameters: any): Promise<void> => {
+        this.backImpl(callback, parameters);
       }
     };
 
     this.finishPressedMapping = {
       command: "finishPressed",
-      handler: async (parameters: any) => {
-        return this.finishImpl(parameters);
+      asyncHandler: async (callback: AsyncMessageCallback, parameters: any): Promise<void> => {
+        await callback.call(null, await this.finishImpl(parameters));
       }
     };
 
     this.openFileDialogMapping = {
       command: "openFileDialog",
-      handler: async (parameters: any) => {
-        return this.openFileDialogMappingImpl(parameters);
+      asyncHandler: async (callback: AsyncMessageCallback, parameters: any): Promise<void> => {
+        await callback.call(null, await this.openFileDialogMappingImpl(parameters));
       }
     }
 
     this.validateMapping = {
       command: "validate",
-      handler: async (parameters: any) => {
+      asyncHandler: async (callback: AsyncMessageCallback, parameters: any): Promise<void> => {
         if (!this.isDirty) {
           this.isDirty = true;
           this.updateWizardPanelTitle();
         }
-        return {
-          returnObject: {},
-          templates: this.createValidationTemplates(parameters)
-        };
+        await this.createAndPostValidationTemplates(callback, parameters);
       }
     };
   }
 
-  private createValidationTemplates(parameters: any) {
-    const validations = this.generateValidationTemplates(parameters);
-    validations.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, false) });
+  private async createAndPostValidationTemplates(callback: AsyncMessageCallback, parameters: any): Promise<void> {
+    const prevParams = this.previousParameters;
     this.previousParameters = parameters;
-    return validations;
+    await this.fireValidationTemplatesForCurrentPage(callback, parameters, prevParams);
+    await this.fireUpdatedButtonBar(callback, parameters);
   }
 
   canFinishInternal(parameters: any): boolean {
@@ -141,31 +132,31 @@ export class WebviewWizard extends Wizard implements IWizard {
     return nextPage;
   }
 
-  backImpl(parameters: any): HandlerResponse {
+  async backImpl(callback: AsyncMessageCallback, parameters: any): Promise<void> {
     this.currentPage = this.getActualPreviousPage(parameters);
     // Get templates for the previous page content and validation result
-    const templates = this.getShowCurrentPageTemplates(parameters);
-    templates.push(...this.createValidationTemplates(parameters));
-    return {
-      returnObject: {
-        focusedField: this.currentPage?.getFocusedField()
-      },
-      templates: templates
-    };
+    await this.fireCurrentPageInitialTemplates(callback, parameters);
+    await this.createAndPostValidationTemplates(callback, parameters);
   }
 
-  nextImpl(parameters: any): HandlerResponse {
+  public templatesToHandlerResponse(templates: Template[], focus: boolean): HandlerResponse {
+    const retObj: any = {};
+    if( focus ) {
+      retObj["focusedField"] = this.currentPage?.getFocusedField();
+    }
+    const ret: HandlerResponse = {
+      returnObject: retObj,
+      templates: templates
+    };
+    return ret;
+  }
+
+  async nextImpl(callback: AsyncMessageCallback, parameters: any): Promise<void> {
     let nextPage: IWizardPage | null = this.getActualNextPage(parameters);
     this.currentPage = nextPage;
     // Get templates for the next page content and validation result
-    const templates = this.getShowCurrentPageTemplates(parameters);
-    templates.push(...this.createValidationTemplates(parameters));
-    return {
-      returnObject: {
-        focusedField: this.currentPage?.getFocusedField()
-      },
-      templates: templates
-    };
+    await this.fireCurrentPageInitialTemplates(callback, parameters);
+    await this.createAndPostValidationTemplates(callback, parameters);
   }
 
   async finishImpl(data: any): Promise<HandlerResponse> {
@@ -223,7 +214,26 @@ export class WebviewWizard extends Wizard implements IWizard {
     disposeWizard(this.id);
   }
 
-  getShowCurrentPageTemplates(parameters: any): Template[] {
+  /**
+   * This function will reload a page's headings, content, and button bar.
+   * It WILL validate the page.
+   * It WILL NOT include field validation in the templates sent to webview.
+   * It WILL use the validation to update button bars.
+   * 
+   * This function should only be called when a new page is first loaded, 
+   * either via the 'ready', 'next', or 'back' mappings.
+   * 
+   * @param callback 
+   * @param parameters 
+   */
+  async fireCurrentPageInitialTemplates(callback: AsyncMessageCallback, parameters: any): Promise<void> {
+    const templates = this.getCurrentPageHeadingsTemplates(parameters);
+    templates.push({ id: "content", content: this.getCurrentPageContent(parameters) });
+    await callback.call(null, this.templatesToHandlerResponse(templates, true));
+    await callback.call(null, this.templatesToHandlerResponse([this.getDisabledWizardControlsTemplates()], true));
+  }
+
+  getCurrentPageHeadingsTemplates(parameters: any): Template[] {
     let ret: Template[] = [];
     if (this.definition.hideWizardHeader === true) {
       ret.push({ id: "wizardHeader", content: "&nbsp;" });
@@ -246,9 +256,6 @@ export class WebviewWizard extends Wizard implements IWizard {
         ret.push({ id: "pageDescription", content: this.getCurrentPageDescription() === undefined ? "" : this.getCurrentPageDescription() });
       }
     }
-
-    ret.push({ id: "content", content: this.getCurrentPageContent(parameters) });
-    ret.push({ id: "wizardControls", content: this.getUpdatedWizardControls(parameters, true) });
     return ret;
   }
 
@@ -263,12 +270,10 @@ export class WebviewWizard extends Wizard implements IWizard {
       '<hr />\n';
   }
 
-  generateValidationTemplates(parameters: any): Template[] {
-    return this.getCurrentPage() !== null ? this.getCurrentPage()!.getValidationTemplates(parameters, this.previousParameters) : [];
-  }
-
-  validateAndUpdatePageComplete(parameters: any) {
-    this.getCurrentPage()!.validateAndUpdatePageComplete(parameters, this.previousParameters);
+  async fireValidationTemplatesForCurrentPage(callback: AsyncMessageCallback, parameters: any, previousParams: any): Promise<void> {
+    const cp = this.getCurrentPage();
+    if( cp )
+      cp.firePageValidationTemplates(callback, parameters, previousParams);
   }
 
   getCurrentPageName(): string | undefined {
@@ -332,18 +337,35 @@ export class WebviewWizard extends Wizard implements IWizard {
       this.addPage(page);
     }
   }
-  getUpdatedWizardControls(parameters: any, validate: boolean): string {
-    if (validate) {
-      // Don't care about return value here, just want pageComplete to be set
-      this.validateAndUpdatePageComplete(parameters);
-    }
+
+  getUpdatedWizardControls(parameters: any): string {
+    return this.getButtonBarHtml(parameters);
+  }
+  getUpdatedWizardControlsTemplate(parameters: any): Template {
+    return { id: "wizardControls", content: this.getButtonBarHtml(parameters) };
+  }
+  
+  async fireUpdatedButtonBar(callback: AsyncMessageCallback, parameters: any) {
+    const buttonBar = this.getUpdatedWizardControlsTemplate(parameters);
+    await callback.call(null, this.templatesToHandlerResponse([buttonBar], false));
+  }
+
+  getButtonBarHtml(parameters: any): string {
     let hasPrevious = (this.currentPage !== null &&
       this.getActualPreviousPage(this.currentPage) !== null);
 
     let hasNext = (this.currentPage !== null && this.currentPage.isPageComplete() &&
       this.getActualNextPage(parameters) !== null);
-    let canFinishNow = this.canFinishInternal(parameters);
-
+    let canFinishNow: boolean = this.currentPage !== null && this.currentPage.isPageComplete() && this.canFinishInternal(parameters);
+    return this.getButtonBarHtmlImpl(hasPrevious, hasNext, canFinishNow);
+  }
+  getDisabledWizardControlsHtml(): string {
+    return this.getButtonBarHtmlImpl(false, false, false);
+  }
+  getDisabledWizardControlsTemplates(): Template {
+    return { id: "wizardControls", content: this.getDisabledWizardControlsHtml() };
+  }
+  getButtonBarHtmlImpl(hasPrevious: boolean, hasNext: boolean, canFinishNow: boolean): string {
     let ret: string = "";
     if (this.definition.buttons) {
       for (let button of this.definition.buttons) {
@@ -365,6 +387,7 @@ export class WebviewWizard extends Wizard implements IWizard {
     return ret;
   }
 
+
   showDirtyState(def: WizardDefinition): boolean {
     return def.showDirtyState !== undefined && def.showDirtyState && this.isDirty;
   }
@@ -379,6 +402,7 @@ export function createButton(id: string | undefined, onclick: string | undefined
           `
 }
 export type WizardPageValidator = (parameters: any, previousParameters?: any) => ValidatorResponse;
+export type AsyncWizardPageValidator = (parameters: any, previousParameters: any) => Promise<ValidatorResponse>[];
 export type WizardPageFieldOptionProvider = (parameters?: any) => string[];
 
 export interface WizardPageFieldOptionLabelProvider {
@@ -417,6 +441,11 @@ export interface ValidatorResponse {
   fieldRefresh?: Map<string, FieldDefinitionState>;
 }
 
+export interface CompoundValidatorResponse {
+  syncResponse: ValidatorResponse,
+  asyncResponses: Promise<ValidatorResponse>[];
+}
+
 export interface WizardDefinition {
   title: string;
   description?: string;
@@ -436,6 +465,7 @@ export interface WizardPageDefinition {
   hideWizardPageHeader?: boolean;
   fields: (WizardPageFieldDefinition | WizardPageSectionDefinition)[];
   validator?: WizardPageValidator;
+  asyncValidator?: AsyncWizardPageValidator;
 }
 
 export interface WizardPageSectionDefinition {

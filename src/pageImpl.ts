@@ -3,7 +3,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as handlebars from 'handlebars';
 
+// Deprecated
 export type MessageHandler = (parameters?: any) => Promise<HandlerResponse>;
+
+export type AsyncMessageCallback = (response: HandlerResponse) => Promise<void>;
+export type AsyncMessageHandler = (callback: AsyncMessageCallback, parameters?: any) => Promise<void>;
 
 export interface Template {
   id: string;
@@ -11,9 +15,9 @@ export interface Template {
   contentUrl?: string;
 }
 
-export interface MesssageMapping {
+export interface MessageMapping {
   command: string;
-  handler: MessageHandler;
+  asyncHandler: AsyncMessageHandler;
   defaultTemplates?: Template[];
   defaultForward?: string;
 }
@@ -21,6 +25,7 @@ export interface MesssageMapping {
 export interface HandlerResponse {
   returnObject: any;
   templates?: Template[];
+  delayedTemplates?: Promise<Template[]>[];
   forward?: string;
 }
 
@@ -66,7 +71,7 @@ export function createOrShowWizard(
   viewType: string,
   title: string,
   context: vscode.ExtensionContext,
-  messageMappings: MesssageMapping[]) {
+  messageMappings: MessageMapping[]) {
 
   const pages: string = path.join(__dirname, "../", "pages").normalize();
   const html: string = path.join(pages, "stub.html");
@@ -89,7 +94,7 @@ export function createOrShowWizardWithPaths(
   viewType: string,
   title: string,
   context: vscode.ExtensionContext,
-  messageMappings: MesssageMapping[],
+  messageMappings: MessageMapping[],
   rootPath: string,
   pagePath: string
 ) {
@@ -128,7 +133,7 @@ export function createOrShowWizardWithPaths(
 }
 
 function createDispatch(
-  messageMappings: MesssageMapping[],
+  messageMappings: MessageMapping[],
   currentPanelName: string,
   resourceRoot: string
 ) {
@@ -137,51 +142,21 @@ function createDispatch(
       mapping => mapping.command === message.command
     );
     if (mapping) {
-      const response: CommandResponse = {
-        command: `${message.command}Response`,
-      };
-      mapping.handler.call(null, message.parameters).then(result => {
+      const callback: AsyncMessageCallback = async (result: HandlerResponse): Promise<void> => {
         if (!result) {
           return;
         }
-        const templates: Template[] | undefined = (result.templates === null ? mapping.defaultTemplates : result.templates);
         const forward: string | undefined = (result.forward === null ? mapping.defaultForward : result.forward);
-
-        if (templates) {
-          response.contents = [];
-          templates.forEach(template => {
-            if (template.content) {
-              response.contents?.push({
-                id: template.id,
-                body: handlebars.compile(template.content)(result.returnObject),
-              });
-            } else if (template.contentUrl) {
-              response.contents?.push({
-                id: template.id,
-                body: handlebars.compile(
-                  fs
-                    .readFileSync(
-                      path.join(resourceRoot, template.contentUrl)
-                    )
-                    .toString()
-                )(result),
-              });
-            }
-          });
-        } else if (forward) {
+        if( forward ) {
           return handler.call(null, {
             command: forward,
             parameters: result,
           });
         } else {
-          response.result = result;
+          postMessageHandlerResponse(mapping, result, currentPanelName, resourceRoot);
         }
-        response.focusedField = result?.returnObject?.focusedField;
-        const panel: vscode.WebviewPanel | undefined = currentPanels.get(currentPanelName);
-        if (panel && panel !== undefined) {
-          panel.webview.postMessage(response);
-        }
-      });
+      };
+      mapping.asyncHandler.call(null, callback, message.parameters);
     } else {
       vscode.window.showErrorMessage(
         `Can not find a handler for ${message.command}.`
@@ -189,4 +164,58 @@ function createDispatch(
     }
   };
   return handler;
+}
+
+const postMessageHandlerResponse = async (mapping: MessageMapping, 
+  result: HandlerResponse,
+  currentPanelName: string,
+  resourceRoot: string
+) => { 
+  const resp: CommandResponse = generatePostResponseFromHandlerResponse(mapping, result, resourceRoot);
+  sendMessageToWebview(resp, currentPanelName);
+}
+
+const sendMessageToWebview = (resp: CommandResponse, currentPanelName: string): void => {
+  const panel: vscode.WebviewPanel | undefined = currentPanels.get(currentPanelName);
+  if (panel && panel !== undefined) {
+    panel.webview.postMessage(resp);
+  }
+}
+
+const generatePostResponseFromHandlerResponse = (
+  mapping: MessageMapping, 
+  result: HandlerResponse,
+  resourceRoot: string
+): CommandResponse => {
+
+  const response: CommandResponse = {
+    command: `${mapping.command}Response`,
+  };
+  const templates: Template[] | undefined = (result.templates === null ? mapping.defaultTemplates : result.templates);
+  if (templates) {
+    response.contents = [];
+    templates.forEach(template => {
+      if (template.content) {
+        response.contents?.push({
+          id: template.id,
+          body: handlebars.compile(template.content)(result.returnObject),
+        });
+      } else if (template.contentUrl) {
+        response.contents?.push({
+          id: template.id,
+          body: handlebars.compile(
+            fs
+              .readFileSync(
+                path.join(resourceRoot, template.contentUrl)
+              )
+              .toString()
+          )(result),
+        });
+      }
+    });
+  } else {
+    response.result = result;
+  }
+  response.focusedField = result?.returnObject?.focusedField;
+  return response;
 }
