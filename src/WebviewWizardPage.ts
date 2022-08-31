@@ -131,7 +131,7 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
         this.setPageComplete(complete);
         const syncTemplates: Template[] = this.validatorResponseToTemplates(resp.syncResponse, parameters);
         collector.push(...syncTemplates);
-        console.log("Calling sync templates: username=" + username + ";  " + JSON.stringify(syncTemplates));
+        //console.log("Calling sync templates: username=" + username + ";  " + JSON.stringify(syncTemplates));
         if( this.mostRecentValidationCall === currentTime)
           await callback.call(null, toHandlerResponse(syncTemplates));
       }
@@ -144,15 +144,15 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
           this.setPageComplete(complete);
           const xTemplates: Template[] = this.validatorResponseToTemplates(x, parameters);
           collector.push(...xTemplates);
-          console.log("Calling async templates: username=" + username + ";  " + JSON.stringify(xTemplates));
+          //console.log("Calling async templates: username=" + username + ";  " + JSON.stringify(xTemplates));
           if( this.mostRecentValidationCall === currentTime)
             await callback.call(null, toHandlerResponse(xTemplates));
         });
       }
       await Promise.all(resp.asyncResponses);
-      console.log("Done waiting");
+      //console.log("Done waiting");
       const clearOld: Template[] = this.getClearAllEmptyFieldValidationsTemplates(parameters, collector);
-      console.log("Calling clear templates: username=" + username + ";  " + JSON.stringify(clearOld));
+      //console.log("Calling clear templates: username=" + username + ";  " + JSON.stringify(clearOld));
       if( this.mostRecentValidationCall === currentTime)
         await callback.call(null, toHandlerResponse(clearOld));
     }
@@ -199,6 +199,9 @@ export class WebviewWizardPage extends WizardPage implements IWizardPage {
                   if (value.hasOwnProperty("visible")) {
                     stateChanged = stateChanged || currentState.visible !== value.visible;
                     currentState.visible = value.visible;
+                  }
+                  if (value.hasOwnProperty("forceRefresh")) {
+                    stateChanged = true;
                   }
                   if (def !== null && stateChanged) {
                     let str: string = this.getRenderer().oneFieldAsString(def, parameters);

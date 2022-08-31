@@ -502,5 +502,6 @@ export interface WizardPageFieldDefinition {
 
 export interface FieldDefinitionState {
   enabled?: boolean,
-  visible?: boolean
+  visible?: boolean,
+  forceRefresh?: boolean,
 }

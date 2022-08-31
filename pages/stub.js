@@ -6,6 +6,7 @@ function initEventListener(fn) {
     const message = event.data;
     if (message.command.match(/Response$/) && message.contents) {
       let contentSectionModified = false;
+      let changed = [];
       message.contents.forEach(content => {
         if( content.id === 'content') {
           contentSectionModified = true;
@@ -15,20 +16,16 @@ function initEventListener(fn) {
           console.error(content.id + " is null");
         } else {
           element.innerHTML = content.body;
+          changed.push(element);
         }
       });
       if( contentSectionModified ) {
         var onloads = document.querySelectorAll('[data-onload]');
-        for( onloadsIterator = 0; onloadsIterator < onloads.length; onloadsIterator++ ) {
-          const asId = onloads[onloadsIterator]["id"];
-          const onloadVal = findDataOnloadValue(onloads[onloadsIterator]);
-          if( onloadVal ) {
-            try {
-              eval(onloadVal);
-            } catch( error ) {
-              console.log(error);
-            }
-          }
+        runOnloads(onloads);
+      } else {
+        for( let z = 0; z < changed.length; z++ ) {
+          var onloads = changed[z].querySelectorAll('[data-onload]');
+          runOnloads(onloads);
         }
       }
     } else if (message.command === "openFileDialogResponse") {
@@ -56,8 +53,30 @@ function initEventListener(fn) {
   });
 }
 
+function runOnloads(onloads) {
+  // console.log("onloads is " + onloads);
+  // console.log(JSON.stringify(onloads));
+  if( onloads ) {
+    for( onloadsIterator = 0; onloadsIterator < onloads.length; onloadsIterator++ ) {
+      const asId = onloads[onloadsIterator]["id"];
+      // console.log("Running data-onload for " + asId);
+      const onloadVal = findDataOnloadValue(onloads[onloadsIterator]);
+      // console.log("onload value for " + asId + " is " + onloadVal);
+      if( onloadVal ) {
+        try {
+          eval(onloadVal);
+        } catch( error ) {
+          console.log(error);
+        }
+      }
+    }
+  }
+}
+
 function findDataOnloadValue(el) {
-  for (i = 0, atts = el.attributes, n = atts.length; i < n; i++){
+  const atts = el ? el.attributes : undefined;
+  const n = atts ? atts.length : 0;
+  for (i = 0; i < n; i++){
     if( atts[i].nodeName === "data-onload") {
       return atts[i].nodeValue;
     }
@@ -265,7 +284,6 @@ function initComboField(comboId) {
   });
   comboTextField.addEventListener('click', () => {
     comboDropDownForTags(comboTextField.id, (comboTextField.value || "").trim());
-    //keyUpDown();
   });
   comboRegisterKeyUpDownListener(comboId);
 }
@@ -281,7 +299,7 @@ function showComboList(id) {
 }
 
 function selectHighlightedCombo(comboId) {
-  console.log("selectHighlightedCombo");
+  // console.log("selectHighlightedCombo");
 
   const group = document.getElementById(comboId + "_listgroup");
   const listArray = group.querySelectorAll('li ul li');
@@ -295,7 +313,7 @@ function selectHighlightedCombo(comboId) {
 }
 
 function selectComboElement(comboId, listItem) {
-  console.log("selectComboElement");
+  // console.log("selectComboElement");
 
   const textField = document.getElementById(comboId);
   textField.value = listItem.innerHTML;
@@ -313,29 +331,29 @@ function highlightComboElement(comboId, listItem) {
 }
 
 function hideComboList(id) {
-  console.log("hideComboList");
+  // console.log("hideComboList");
   const group = document.getElementById(id + "_innerUL");
   group.setAttribute("data-toggle", 'false');
 }
 
 function delayedHideComboList(id) {
-  console.log("Calling delayedHideComboList");
+  // console.log("Calling delayedHideComboList");
   setTimeout(
     function() {
-      console.log("About to call hideComboList");
+      // console.log("About to call hideComboList");
       hideComboList(id);
     }, 250);
 }
 
 function initComboItem(id, item) {
-  console.log("initComboItem");
+  // console.log("initComboItem");
 
   item.setAttribute("data-display", true);
   item.setAttribute("data-highlight", false);
 }
 
 function initComboList(id) {
-  console.log("initComboList");
+  // console.log("initComboList");
 
   const group = document.getElementById(id + "_listgroup");
   const listArray = group.querySelectorAll('li ul li');
@@ -355,9 +373,11 @@ function comboCopyPasteFor(id) {
 }
 
 function comboDropDownForTags(id, val) {
+  // console.log("Opening dropdown");
   const group = document.getElementById(id + "_listgroup");
   const listArray = group.querySelectorAll('li ul li');
   let firstFound = false;
+  // console.log("items found in listArray: " + listArray);
   for (let i = 0; i < listArray.length; i++) {
     const highlighted = comboMatching(listArray[i], val.trim());
     if( !firstFound && highlighted === 'true') {
@@ -379,6 +399,7 @@ function comboMatching(item, input) {
 }
 
 function comboRegisterKeyUpDownListener(comboId) {
+  // console.log("Inside comboRegisterKeyUpDownListener for " + comboId);
   const comboTextField = document.getElementById(comboId);
   comboTextField.onkeydown = function (e) {
     if( e.code === 'Escape') {
@@ -390,9 +411,11 @@ function comboRegisterKeyUpDownListener(comboId) {
 
     const isVisible = isComboListVisible(comboId);
     if( !isVisible) {
+      // console.log("Not currently visible, we should show it");
       comboDropDownForTags(comboTextField.id, (comboTextField.value || "").trim());
       return;
     }
+    // console.log("Currently visible, let's move the flags");
 
     const group = document.getElementById(comboId + "_listgroup");
     const listArray = group.querySelectorAll('li ul li[data-display="true"]');
@@ -415,7 +438,7 @@ function comboRegisterKeyUpDownListener(comboId) {
     for( let i = 0; i < listArray.length; i++ ) {
       listArray[i].setAttribute("data-highlight", i === newHighlight);
       if( i === newHighlight ) {
-        console.log("Highlighted element has scrolltop of " + listArray[i].scrollTop);
+        //console.log("Highlighted element has scrolltop of " + listArray[i].scrollTop);
         listArray[i].scrollIntoView();
       }
     }
