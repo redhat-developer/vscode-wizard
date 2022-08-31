@@ -222,11 +222,13 @@ export function getSinglePageAllControlsDefinition(context: vscode.ExtensionCont
                     type: "combo",
                     initialValue: "Java",
                     optionProvider: (parameters:any) => {
-                        let ret = [];
                         // pull from a model
+                        let ret = [];
+                        if( parameters.over18 ) {
+                            ret.push("Brainfuck");
+                        }
                         ret.push("Perl");
                         ret.push("Java");
-                        ret.push("Brainfuck");
                         return ret;
                     }
                 },
@@ -239,6 +241,10 @@ export function getSinglePageAllControlsDefinition(context: vscode.ExtensionCont
                     optionProvider: (parameters:any) => {
                         let ret = [];
                         // pull from a model
+                        if( parameters.over18 ) {
+                            ret.push("PregnantButt");
+                            ret.push("Buttcoin");
+                        }
                         ret.push("Pickle");
                         ret.push("BTC");
                         ret.push("Ethereum");
@@ -264,8 +270,9 @@ export function getSinglePageAllControlsDefinition(context: vscode.ExtensionCont
                     }
                 },
             ],
-            validator: (parameters:any): ValidatorResponse => {
+            validator: (parameters: any, previousParameters?: any): ValidatorResponse => {
                 let items : ValidatorResponseItem[] = [];
+                let refreshMap: Map<string, FieldDefinitionState> | undefined = undefined;
                 const username = parameters.addusername;
                 if( username === 'Fred') {
                     items.push(createValidationItem(SEVERITY.WARN, "addusername", 
@@ -275,7 +282,16 @@ export function getSinglePageAllControlsDefinition(context: vscode.ExtensionCont
                     items.push(createValidationItem(SEVERITY.INFO, "addusername", 
                     "I am overjoyed to see my overlord, El Jefe, long may he reign!"));
                 }
-                return { items: items };
+                if( parameters && (parameters.over18 !== previousParameters.over18)) {
+                    // the over18 box has changed
+                    refreshMap = new Map<string, FieldDefinitionState>();
+                    refreshMap.set("favoriteLanguage", {forceRefresh: true});
+                    refreshMap.set("bestCryptos", {forceRefresh: true});
+                }
+                if( refreshMap ) {
+                    return { items: items, fieldRefresh: refreshMap };
+                }
+                return { items: items};
             },
             asyncValidator: (parameters:any, prev: any): Promise<ValidatorResponse>[] => {
                 const ret: Promise<ValidatorResponse>[] = [];
