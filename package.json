@@ -22,9 +22,9 @@
     "*"
   ],
   "scripts": {
-    "build": "npm run clean && npm run compile",
-    "clean": "rm -rf out || rmdir out /s /q",
+    "build": "rm -rf lib && tsc -p ./",
     "compile": "tsc -p ./",
+    "lint": "eslint src/",
     "prepublish": "tsc -p .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "tsc -watch -p ./"
@@ -34,12 +34,11 @@
     "/pages"
   ],
   "devDependencies": {
-    "@types/node": "^14.14.14",
+    "@types/node": "^22",
     "@types/vscode": "^1.53.0",
-    "@typescript-eslint/eslint-plugin": "^2.18.0",
-    "@typescript-eslint/parser": "^2.18.0",
-    "typescript": "^4.1.3",
-    "eslint-config-airbnb-base": "^14.2.1"
+    "eslint": "^9",
+    "typescript": "^5.8",
+    "typescript-eslint": "^8"
   },
   "dependencies": {
     "handlebars": "^4.7.3"

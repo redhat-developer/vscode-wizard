@@ -1,0 +1,74 @@
+name: Release to NPM
+
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - master
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref != 'refs/heads/master' }}
+    name: Publish Release
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Use Node 22
+      uses: actions/setup-node@v7
+      with:
+        node-version: 22
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Use npm 12
+      run: npm install npm@^12 -g
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Lint
+      run: npm run lint
+
+    - name: Build
+      run: npm run build
+
+    - name: Publish Release to npm
+      run: |
+        echo "npm version $(npm -v)"
+        NODE_AUTH_TOKEN="" npm publish --access public --provenance
+
+  prerelease:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/master' }}
+    name: Publish Prerelease
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Use Node 22
+      uses: actions/setup-node@v7
+      with:
+        node-version: 22
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Use npm 12
+      run: npm install npm@^12 -g
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Lint
+      run: npm run lint
+
+    - name: Build
+      run: npm run build
+
+    - name: Publish Prerelease to npm
+      run: |
+        echo "npm version $(npm -v)"
+        npm version prerelease --preid $(git rev-parse --short HEAD) --no-git-tag-version
+        NODE_AUTH_TOKEN="" npm publish --tag next --access public --provenance
